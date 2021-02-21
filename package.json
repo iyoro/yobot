@@ -1,0 +1,24 @@
+{
+  "name": "yobot",
+  "version": "0.1.0",
+  "description": "Discord rollbot",
+  "main": "src/server.js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "run": "node src/app.js",
+    "test": "todo-test-cmd"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "dice",
+    "roleplay"
+  ],
+  "author": "iyoro",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "fdice": "^1.0.0"
+  }
+}
