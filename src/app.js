@@ -16,7 +16,6 @@ const facade = {
      * @returns {Array} commands.
      */
     getCommands() {
-        console.debug("getting commands", commands);
         return commands.filter(it => it.hidden !== true)
     },
 
@@ -26,8 +25,8 @@ const facade = {
      * @param {Discord.StringResolvable} response What to send.
      * @returns {Promise<Message|Message[]>}
      */
-    send(response) {
-        const p = message.channel.send(response);
+    send(channel, response) {
+        const p = channel.send(response);
         p.then(sent => logger.debug({ sent }, 'Sent message'))
             .catch(err => logger.error({ err }, 'Send message failed'))
         return p;
@@ -63,25 +62,29 @@ const onMessage = message => {
     commands.find(it => it.accept(cmd)).handle(message, args, cmd, facade);
 }
 
-const client = new Discord.Client();
+const client = new Discord.Client()
 client.once('invalidated', () => {
-    logger.info('Client invalidated, shutting down');
-    process.exit(2);
-});
-client.on('rateLimit', limits => logger.info({ limits }, 'Rate limited'));
-client.on('error', err => logger.error({ err }, 'Client error'));
-client.on('message', onMessage);
+    logger.info('Client invalidated, shutting down')
+    process.exit(2)
+})
+client.on('rateLimit', limits => logger.info({ limits }, 'Rate limited'))
+client.on('error', err => logger.error({ err }, 'Client error'))
+client.on('message', onMessage)
 
 client.login(config.clientToken)
     .then(() => logger.info('Client logged in'))
     .catch(error => {
-        logger.error(error, 'Client login failed');
-        process.exit(1);
+        logger.error(error, 'Client login failed')
+        process.exit(2)
     });
 
-process.once('SIGINT', () => {
-    logger.info("Closing down");
-    client.destroy();
-    process.exit(0);
+process.on('uncaughtException', function (err) {
+    logger.error({ err }, "Uncaught exception")
+    process.exit(3)
 });
-/**/
+
+process.once('SIGINT', () => {
+    logger.info("Closing down")
+    client.destroy()
+    process.exit(0)
+});
