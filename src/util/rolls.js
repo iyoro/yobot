@@ -5,9 +5,11 @@ import {
     parse, DieTooBigError, ExpressionTooLongError, InvalidChunkError, RollLimitExceededError, TooManyChunksError, TooManyDiceError
 } from 'fdice';
 
+/**
+ * For reporting errors from a roll.
+ */
 class RollError extends Error {
     /**
-     * 
      * @param {string} message Exception message.
      * @param {string} userMessage User-facing message to respond with.
      * @param {any} cause Another Error.
@@ -21,13 +23,14 @@ class RollError extends Error {
     }
 }
 
-const roll = (args) => rollCommon(args.length === 0 ? '1d20' : args.join(' '))
-
-const rollCommon = (expr) => {
+/**
+ * Makes a roll using the expression in the args.
+ * @param {Array} args Roll args (tokens like 1d20, +2, etc.)
+ * @returns {string} Message to send for this roll.
+ */
+const roll = (args) => {
+    const expr = args.length === 0 ? '1d20' : args.join(' ');
     try {
-        // if (expr === 'explode') {
-        //     throw new Error('Deliberate explosion')
-        // }
         const roller = parse(expr);
         const result = roller(false);
         return prettyPrint(expr, result);
@@ -45,15 +48,32 @@ const rollCommon = (expr) => {
     }
 }
 
+/**
+ * Transform a roll result array into user-facing string.
+ * @param {string} expr Original roll expr
+ * @param {Array} result Result array
+ */
 const prettyPrint = (expr, result) => {
-    // Uglify the expression a little. Prevent reams of whitespace flooding us.
-    const prettyExpr = expr.trim().split(' ').join('')
-    // Prettify the results somewhat: a, a, a, a; b, b, b; c, c 
-    const groups = result.map(part => part instanceof Array ? part.join(', ') : part).reduce((a, b) => a + '; ' + b)
-    const sum = result.flat().reduce((a, b) => a + b)
-    const pretty = `${prettyExpr} ➔ ${groups} ➔ **${sum}**`
+    const pretty = prettify(expr, result);
+    const str = pretty.map((it, i) => i == pretty.length - 1 ? `**${it}**` : it).join(' ➔ ');
     // 1500 chosen randomly. Discord message limit is 2000.
-    return pretty.length < 1500 ? pretty : pretty.substr(0, 1500) + '... :boom:';
+    return str.length < 1500 ? str : str.substr(0, 1500) + ' ... I ... can\'t ... :boom:';
 }
 
-export default (logger) => ({ roll, RollError })
+/**
+ * Produces the parts of a message to pretty print: expression, optionally groups, and then sum.
+ * @param {Array} result Unflattened roll result.
+ * @returns {Array} Pretty format parts.
+ */
+const prettify = (expr, result) => {
+    const parts = [expr.trim().split(' ').join('')]
+    const flat = result.flat()
+    const sum = flat.reduce((a, b) => a + b)
+    if (flat.length > 1) {
+        parts.push(result.map(part => part instanceof Array ? part.join(', ') : part).reduce((a, b) => a + '; ' + b))
+    }
+    parts.push(sum)
+    return parts
+}
+
+export default { roll, RollError }
