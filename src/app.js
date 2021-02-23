@@ -41,7 +41,7 @@ const facade = {
      * @returns {Promise<Message|Message[]>}
      */
     reply(message, response) {
-        const p = message.channel.send(response);
+        const p = message.channel.send(response, { reply: message });
         p.then(sent => logger.debug({ sent }, 'Sent reply'))
             .catch(err => logger.error({ err }, 'Send reply failed'))
         return p;
