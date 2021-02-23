@@ -28,9 +28,9 @@ export default (facade) => {
             description: '`!help` You are here.',
             accept: (cmd) => cmd === 'help',
             handle: (message, args, cmd) => {
-                logger.debug({ member: message.member.id, command: 'help' });
+                logger.debug({ member: message.member.id, command: 'help' })
                 if (message.createdTimestamp > (lastHelpTime + 60_000)) {
-                    facade.reply(message, getEmbed()).then(() => lastHelpTime = message.createdTimestamp);
+                    facade.send(message.channel, getEmbed()).then(() => lastHelpTime = message.createdTimestamp)
                 }
             }
         },
