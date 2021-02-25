@@ -3,10 +3,10 @@
  */
 /** @typedef {import('../facade').default} Facade */
 
-import { MessageEmbed } from 'discord.js'
+import { MessageEmbed } from 'discord.js';
 
 // Last time help was requested. TODO multiserver: needs to be a map, keyed by guild.
-let lastHelpTime = 0
+let lastHelpTime = 0;
 
 /**
  * Adds commands to the bot facade.
@@ -33,7 +33,7 @@ export default (facade, logger) => {
                     embed.addField(command.name, command.description);
                 }
                 embed.setTimestamp().setFooter('Made for you with <3');
-                facade.send(message.channel, embed).then(() => lastHelpTime = message.createdTimestamp)
+                facade.send(message.channel, embed).then(() => lastHelpTime = message.createdTimestamp);
             }
         }
     });

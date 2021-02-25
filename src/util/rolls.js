@@ -16,10 +16,10 @@ class RollError extends Error {
      * @param {boolean} quiet If true, this was user error that isn't worth logging as an error, e.g. expression typo.
      */
     constructor(message, userMessage, cause, quiet = false) {
-        super(message)
-        this.userMessage = userMessage
-        this.cause = cause
-        this.quiet = quiet
+        super(message);
+        this.userMessage = userMessage;
+        this.cause = cause;
+        this.quiet = quiet;
     }
 }
 
@@ -36,17 +36,17 @@ const roll = (args) => {
         return prettyPrint(expr, result);
     } catch (err) {
         if (err instanceof InvalidChunkError) {
-            throw new RollError("Invalid chunk in dice expr", 'does not compute :slight_frown:', err, true)
+            throw new RollError("Invalid chunk in dice expr", 'does not compute :slight_frown:', err, true);
         } else if (err instanceof ExpressionTooLongError || err instanceof TooManyChunksError || err instanceof TooManyDiceError || err instanceof DieTooBigError) {
-            throw new RollError('Excessive expression', 'take it easy! :hushed:', err)
+            throw new RollError('Excessive expression', 'take it easy! :hushed:', err);
         } else if (err instanceof RollLimitExceededError) {
-            throw new RollError('Timed out', 'I don\'t have enough dice for that! :pensive:', err)
+            throw new RollError('Timed out', 'I don\'t have enough dice for that! :pensive:', err);
         } else {
             throw new RollError('Unhandled error during roll',
-                'awkward, something has gone wrong. The error has been logged for investigation.', err)
+                'awkward, something has gone wrong. The error has been logged for investigation.', err);
         }
     }
-}
+};
 
 /**
  * Transform a roll result array into user-facing string.
@@ -58,7 +58,7 @@ const prettyPrint = (expr, result) => {
     const str = pretty.map((it, i) => i == pretty.length - 1 ? `**${it}**` : it).join(' ➔ ');
     // 1500 chosen randomly. Discord message limit is 2000.
     return str.length < 1500 ? str : str.substr(0, 1500) + ' ... I ... can\'t ... :boom:';
-}
+};
 
 /**
  * Produces the parts of a message to pretty print: expression, optionally groups, and then sum.
@@ -66,14 +66,14 @@ const prettyPrint = (expr, result) => {
  * @returns {Array} Pretty format parts.
  */
 const prettify = (expr, result) => {
-    const parts = [expr.trim().split(' ').join('')]
-    const flat = result.flat()
-    const sum = flat.reduce((a, b) => a + b)
+    const parts = [expr.trim().split(' ').join('')];
+    const flat = result.flat();
+    const sum = flat.reduce((a, b) => a + b);
     if (flat.length > 1) {
-        parts.push(result.map(part => part instanceof Array ? part.join(', ') : part).reduce((a, b) => a + '; ' + b))
+        parts.push(result.map(part => part instanceof Array ? part.join(', ') : part).reduce((a, b) => a + '; ' + b));
     }
-    parts.push(sum)
-    return parts
-}
+    parts.push(sum);
+    return parts;
+};
 
-export default { roll, RollError }
+export default { roll, RollError };

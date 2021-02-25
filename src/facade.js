@@ -60,7 +60,7 @@ export default class Facade {
     send(channel, response) {
         const p = channel.send(response);
         p.then(sent => this.logger.debug({ sent }, 'Sent message'))
-            .catch(err => this.logger.error({ err }, 'Send message failed'))
+            .catch(err => this.logger.error({ err }, 'Send message failed'));
         return p;
     }
 
@@ -74,7 +74,7 @@ export default class Facade {
     reply(message, response) {
         const p = message.channel.send(response, { reply: message });
         p.then(sent => this.logger.debug({ sent }, 'Sent reply'))
-            .catch(err => this.logger.error({ err }, 'Send reply failed'))
+            .catch(err => this.logger.error({ err }, 'Send reply failed'));
         return p;
     }
-};
+}

@@ -26,14 +26,14 @@ export default (facade, logger) => {
             result = rolls.roll(args);
         } catch (err) { // RollError
             if (err.quiet) {
-                logger.info({ args, member: message.member.id }, err.message)
+                logger.info({ args, member: message.member.id }, err.message);
             } else {
-                logger.error({ args, member: message.member.id, err }, err.message)
+                logger.error({ args, member: message.member.id, err }, err.message);
             }
             result = err.userMessage;
         }
         return result;
-    }
+    };
 
     facade.addCommand({
         name: ':game_die: Roll',
@@ -44,8 +44,8 @@ export default (facade, logger) => {
             + ' keep/drop highest/lowest. Click on the title above to see the full documentation.',
         accept: (cmd) => cmd === 'roll',
         handle: (message, args) => {
-            logger.debug({ args }, "Roll")
-            const result = doRoll(args, message)
+            logger.debug({ args }, "Roll");
+            const result = doRoll(args, message);
             const p = facade.reply(message, result);
             p.then(() => lastRoll[message.member.id] = args);
             return p;
@@ -56,10 +56,10 @@ export default (facade, logger) => {
         description: `\`${prefix}${prefix}\` Repeat your last ${prefix}roll. Maybe the next one will be better...`,
         accept: (cmd) => cmd === prefix, // i.e. react to !! if prefix is !
         handle: (message, args) => {
-            logger.debug({ args }, "Reroll")
-            const last = lastRoll[message.member.id]
-            let result = last ? doRoll(last, message) : 'try rolling something first'
+            logger.debug({ args }, "Reroll");
+            const last = lastRoll[message.member.id];
+            let result = last ? doRoll(last, message) : 'try rolling something first';
             return facade.reply(message, result);
         }
     });
-}
+};

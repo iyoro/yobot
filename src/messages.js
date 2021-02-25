@@ -14,11 +14,11 @@ export default facade => ({
      * @param {Message} message 
      */
     onMessage: message => {
-        if (!(message.channel instanceof TextChannel)) { return }
-        if (message.author.bot) { return }
-        if (!/dice|roll/.test(message.channel.name)) { return }
-        if (!message.content.startsWith(facade.config.commandPrefix)) { return }
-        if (!/^.\S/.test(message.content)) { return } // Ignores "! foo"
+        if (!(message.channel instanceof TextChannel)) { return; }
+        if (message.author.bot) { return; }
+        if (!/dice|roll/.test(message.channel.name)) { return; }
+        if (!message.content.startsWith(facade.config.commandPrefix)) { return; }
+        if (!/^.\S/.test(message.content)) { return; } // Ignores "! foo"
         const parts = message.content.split(/\s/);
         const cmd = parts[0].substring(1);
         const args = parts.length > 1 ? parts.slice(1) : [];
