@@ -8,7 +8,7 @@
   "scripts": {
     "run": "node src/app.js",
     "test": "jasmine",
-    "lint-fix": "eslint --fix"
+    "lint-fix": "eslint --fix src/"
   },
   "keywords": [
     "discord",
