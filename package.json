@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "run": "node src/app.js",
-    "test": "todo-test-cmd",
+    "test": "jasmine",
     "lint-fix": "eslint --fix"
   },
   "keywords": [
