@@ -10,7 +10,9 @@ parserOptions:
   impliedStrict: true
   sourceType: module  
 rules:
+  array-callback-return: 1
   no-console: 1
-  no-template-curly-in-string: 1
   no-param-reassign: 2
+  no-template-curly-in-string: 1  
   no-useless-call: 1
+  semi: 2
