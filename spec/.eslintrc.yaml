@@ -1,0 +1,6 @@
+---
+extends: '../.eslintrc.yaml'
+env:
+  jasmine: true
+rules:
+  no-console: 0

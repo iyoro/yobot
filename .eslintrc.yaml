@@ -1,0 +1,16 @@
+---
+root: true
+extends: eslint:recommended
+env:
+  node: true
+  es6: true
+  es2017: true
+parserOptions:
+  ecmaVersion: 2019
+  impliedStrict: true
+  sourceType: module  
+rules:
+  no-console: 1
+  no-template-curly-in-string: 1
+  no-param-reassign: 2
+  no-useless-call: 1
