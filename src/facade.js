@@ -47,6 +47,8 @@ export default class Facade {
      * @param {Array<string>} args Other string tokens from the message
      */
     exec(message, cmd, args) {
+        // N.b. param order is args then command - commands mostly already know what they are.
+        this.logger.debug({ command: cmd, args }, "Try to exec");
         this.getCommands(true).find(it => it.accept(cmd)).handle(message, args, cmd);
     }
 
@@ -54,11 +56,11 @@ export default class Facade {
      * Send a message.
      *
      * @param {Discord.TextChannel} channel Where to send.
-     * @param {Discord.StringResolvable} response What to send.
+     * @param {Discord.StringResolvable} text What to send.
      * @returns {Promise<Message|Message[]>}
      */
-    send(channel, response) {
-        const p = channel.send(response);
+    send(channel, text) {
+        const p = channel.send(text);
         p.then(sent => this.logger.debug({ sent }, 'Sent message'))
             .catch(err => this.logger.error({ err }, 'Send message failed'));
         return p;
@@ -71,8 +73,8 @@ export default class Facade {
      * @param {Discord.StringResolvable} ressponse What to reply with.
      * @returns {Promise<Message|Message[]>}
      */
-    reply(message, response) {
-        const p = message.channel.send(response, { reply: message });
+    reply(message, text) {
+        const p = message.channel.send(text, { reply: message });
         p.then(sent => this.logger.debug({ sent }, 'Sent reply'))
             .catch(err => this.logger.error({ err }, 'Send reply failed'));
         return p;
