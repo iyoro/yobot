@@ -1,7 +1,7 @@
 /**
  * @file Unit spec for the bot command facade.
  */
-import { Message, TextChannel } from 'discord.js';
+import { Message } from 'discord.js';
 import pino from 'pino';
 import Facade from '../src/facade.js';
 
