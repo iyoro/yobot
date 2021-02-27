@@ -13,9 +13,9 @@ Commands are prefixed with `!` but this can be easily changed on request.
 
 | Command | What |
 |---|---|
-| !roll | Rolls some dice |
-| !! | Repeats your last `!roll` |
-| !help | Shows a summary of each command |
+| `!roll` | Rolls some dice |
+| `!!` | Repeats your last `!roll` |
+| `!help` | Shows a summary of each command |
 
 ### `!roll`
 
