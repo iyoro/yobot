@@ -31,7 +31,7 @@ export default (facade, logger) => {
                     .setDescription('Hi! These are the commands I understand. Click on the link above for complete documentation.');
                 for (let cmd in commands) {
                     const command = commands[cmd];
-                    embed.addField(command.name, command.description);
+                    embed.addField(`${command.icon ? command.icon : ':exclamation:'} ${command.name}`, command.description);
                 }
                 embed.setTimestamp().setFooter('Made for you with <3');
                 facade.send(message.channel, embed).then(() => lastHelpTime = message.createdTimestamp);
