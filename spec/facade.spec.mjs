@@ -8,9 +8,6 @@ import Facade from '../src/facade.js';
 const config = {}; // Not actually used atm.
 const logger = pino({ level: 'error' });
 
-/** @type Facade */
-let facade;
-
 const stubCommand = {
     description: '',
     accept: function (cmd) { return cmd == this.name; },
@@ -18,6 +15,8 @@ const stubCommand = {
 };
 const mkcommand = (name) => Object.assign({ name }, stubCommand);
 
+/** @type Facade */
+let facade;
 beforeEach(function () {
     facade = new Facade(config, logger);
 });
