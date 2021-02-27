@@ -55,5 +55,13 @@ Please either create an issue here on github, or contact iyoro#0003 on Discord.
 
 The bot is developed in the open in the interests of transparency.
 
-## Technical
+### GDPR etc.
 
+Data protection is a fundamental right within the EU. The GDPR definition of *personal data* is very broad, and yobot must, in order to function, process data that falls under GDPR. This data takes the form of Discord usernames and account identifiers.
+
+This is done in the following contexts:
+
+* When chat messages are received and processed (e.g. to look for `!commands`). This data is not stored.
+* Internal error and debug log messages are sometimes generated to allow the developer to investigate problems. These can include discord account names (@something#1234) and account identifiers. All log messages are ephemeral; yobot does not create persistent log files.
+
+User preferences, command history & similar per-user data that yobot needs to keep in to persistent storage are anonymised using irreversible hashes, preventing recovery of Discord user account names and identifiers. In GDPR terms this means the data is **anonymised**, is no longer counts as *personal data*.
