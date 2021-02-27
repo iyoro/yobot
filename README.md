@@ -36,7 +36,7 @@ The response to a `!roll` looks like this:
 ```
 4d6+8-2d4 ➔ 3, 5, 3, 2; 8; -2, -1 ➔ 18
             └────────┘  ╵  └────┘    ╵
-                4d6     +8   -2d4    Total (3+5+3+2+8-2-1)
+                4d6     +8  -2d4    Total (3+5+3+2+8-2-1)
 ```
 
 The middle section is omitted if your roll produces a single value.
