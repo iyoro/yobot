@@ -19,7 +19,6 @@ const lastRoll = {};
  */
 export default (facade, logger) => {
     const prefix = facade.config.commandPrefix;
-
     const doRoll = (args, message) => {
         let result;
         try {
@@ -52,6 +51,7 @@ export default (facade, logger) => {
             return p;
         }
     });
+
     facade.addCommand({
         icon: ':arrows_counterclockwise:',
         name: 'Reroll',
