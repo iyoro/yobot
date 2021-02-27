@@ -36,7 +36,8 @@ export default (facade, logger) => {
     };
 
     facade.addCommand({
-        name: ':game_die: Roll',
+        icon: ':game_die:',
+        name: 'Roll',
         description: `\`${prefix}roll 4d6+2\` Roll dice with expressions made of dice and fixed values\n`
             + 'Standard dice expressions like `d20` and `4d8` are supported. Fudge/Fate dice are supported'
             + ' with `dF`. You can use `d%` to mean `d100` (both work).'
@@ -52,7 +53,8 @@ export default (facade, logger) => {
         }
     });
     facade.addCommand({
-        name: ':arrows_counterclockwise: Reroll',
+        icon: ':arrows_counterclockwise:',
+        name: 'Reroll',
         description: `\`${prefix}${prefix}\` Repeat your last ${prefix}roll. Maybe the next one will be better...`,
         accept: (cmd) => cmd === prefix, // i.e. react to !! if prefix is !
         handle: (message, args) => {

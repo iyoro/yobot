@@ -16,7 +16,8 @@ let lastHelpTime = 0;
  */
 export default (facade, logger) => {
     facade.addCommand({
-        name: ':round_pushpin: Help',
+        icon: ':round_pushpin:',
+        name: 'Help',
         description: '`!help` You are here.',
         accept: (cmd) => cmd === 'help',
         handle: (message) => {

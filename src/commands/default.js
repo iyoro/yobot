@@ -11,6 +11,7 @@
  */
 export default (facade, logger) => {
     facade.addCommand({
+        icon: ':question:',
         name: 'Default',
         description: 'It is a mystery',
         accept: () => true,
