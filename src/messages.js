@@ -1,6 +1,5 @@
 /** @typedef {import('../facade').default} Facade */
 /** @typedef {import('discord.js').Message} Message */
-import { TextChannel } from 'discord.js';
 
 /**
  * Initialises message handling against the given facade.
@@ -9,12 +8,11 @@ import { TextChannel } from 'discord.js';
  */
 export default facade => ({
     /**
-     * Process an incoming message.
+     * Process an incoming message in a text channel.
      * 
      * @param {Message} message 
      */
     onMessage: message => {
-        if (!(message.channel instanceof TextChannel)) { return; }
         if (message.author.bot) { return; }
         if (!/dice|roll/.test(message.channel.name)) { return; }
         if (!message.content.startsWith(facade.config.commandPrefix)) { return; }
