@@ -1,6 +1,10 @@
 ---
 extends: '../.eslintrc.yaml'
+plugins:
+  - jasmine
 env:
   jasmine: true
 rules:
   no-console: 0
+  jasmine/no-disabled-tests: 2
+  jasmine/no-focused-tests: 1
