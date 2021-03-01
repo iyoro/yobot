@@ -20,7 +20,7 @@ export default (facade, logger) => {
         name: 'Help',
         description: '`!help` You are here.',
         accept: (cmd) => cmd === 'help',
-        handle: (message) => {
+        handle: async message => {
             const cooldown = message.createdTimestamp > (lastHelpTime + 60000);
             logger.debug({ member: message.member.id, command: 'help', cooldown });
             if (cooldown) {

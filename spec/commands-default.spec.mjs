@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 describe('Default command provider', () => {
-    it('provides the default command', () => {
+    it('provides the default command', async () => {
         expect(command).toBeUndefined();
         expect(facade.addCommand).toHaveBeenCalledTimes(0);
         def(facade, logger);
@@ -26,7 +26,7 @@ describe('Default command provider', () => {
         expect(facade.send).not.toHaveBeenCalled();
         expect(facade.reply).not.toHaveBeenCalled();
         expect(facade.exec).not.toHaveBeenCalled();
-        command.handle({ content: '!something' }, [], 'something');
+        await command.handle({ content: '!something' }, [], 'something');
         expect(facade.send).not.toHaveBeenCalled();
         expect(facade.reply).not.toHaveBeenCalled();
         expect(facade.exec).not.toHaveBeenCalled();

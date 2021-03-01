@@ -16,7 +16,7 @@ export default (facade, logger) => {
         description: 'It is a mystery',
         accept: () => true,
         hidden: true,
-        handle: (message, args, cmd) => {
+        handle: async (message, args, cmd) => {
             logger.debug({ cmd, args, text: message.content }, "Unhandled command");
         }
     });
