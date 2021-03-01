@@ -115,5 +115,18 @@ describe('Reroll memory', () => {
             expect(rolls.roll).toHaveBeenCalledOnceWith('4d8 - 2');
             expect(facade.reply).toHaveBeenCalledOnceWith(message, 'roll result (attack the boss)');
         });
+        // When rolling with empty args
+        rolls.roll.calls.reset();
+        facade.reply.calls.reset();
+        await rollCmd.handle(message, '', 'roll').then(function () {
+            expect(rolls.roll).toHaveBeenCalledOnceWith('');
+            expect(facade.reply).toHaveBeenCalledOnceWith(message, 'roll result');
+        });
+        rolls.roll.calls.reset();
+        facade.reply.calls.reset();
+        await rerollCmd.handle(message, '', 'reroll').then(function () {
+            expect(rolls.roll).toHaveBeenCalledOnceWith('');
+            expect(facade.reply).toHaveBeenCalledOnceWith(message, 'roll result');
+        });
     });
 });
