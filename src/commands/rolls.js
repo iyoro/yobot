@@ -1,7 +1,8 @@
 /**
- * @file Providees a dice roll commands to explain all the other commands, using their names and descriptions.
+ * @file Provides a dice roll commands to explain all the other commands, using their names and descriptions.
  */
 /** @typedef {import('../facade').default} Facade */
+/** @typedef {import('discord.js').Message } Message */
 import rolls from '../util/rolls.js';
 
 /**
@@ -11,6 +12,20 @@ import rolls from '../util/rolls.js';
  */
 const lastRoll = {};
 
+export const separateRollArgs = (args) => {
+    // Separate off a possible 'comment' at the end.
+    const pos = args.indexOf('#');
+    let expr, suffix;
+    if (pos > -1) {
+        expr = args.substr(0, pos).trim();
+        suffix = args.substr(pos + 1).trim();
+    } else {
+        expr = args;
+        suffix = '';
+    }
+    return { expr, suffix };
+};
+
 /**
  * Adds commands to the bot facade.
  *
@@ -19,19 +34,38 @@ const lastRoll = {};
  */
 export default (facade, logger) => {
     const prefix = facade.config.commandPrefix;
-    const doRoll = (args, message) => {
+
+    /**
+     * Does a roll, including producing a user-facing error message due to e.g. bad expressions.
+     * 
+     * @param {string} expr Dice expression
+     * @param {string} member Originating member identifier.
+     */
+    const doRoll = (expr, member) => {
         let result;
         try {
-            result = rolls.roll(args);
+            result = rolls.roll(expr);
         } catch (err) { // RollError
             if (err.quiet) {
-                logger.info({ args, member: message.member.id }, err.message);
+                logger.info({ args: expr, member }, err.message);
             } else {
-                logger.error({ args, member: message.member.id, err }, err.message);
+                logger.error({ args: expr, member, err }, err.message);
             }
             result = err.userMessage;
         }
         return result;
+    };
+
+    /**
+     * Common parts of doing a roll e.g. handling user suffix.
+     * 
+     * @param {string} args Roll command args i.e. what to roll, any suffixes.
+     * @param {string} message Resulting message from performing the roll.
+     */
+    const rollCommon = (args, message) => {
+        let { expr, suffix } = separateRollArgs(args);
+        const result = doRoll(expr, message.member.id);
+        return suffix ? `${result} (${suffix})` : result;
     };
 
     facade.addCommand({
@@ -43,9 +77,9 @@ export default (facade, logger) => {
             + ' And finally there\'s a bewildering array of modifiers like explosion, re-roll,'
             + ' keep/drop highest/lowest. Click on the title above to see the full documentation.',
         accept: (cmd) => cmd === 'roll',
-        handle: (message, args) => {
+        handle: async (message, args) => {
             logger.debug({ args }, "Roll");
-            const result = doRoll(args, message);
+            const result = rollCommon(args, message);
             const p = facade.reply(message, result);
             p.then(() => lastRoll[message.member.id] = args);
             return p;
@@ -57,11 +91,10 @@ export default (facade, logger) => {
         name: 'Reroll',
         description: `\`${prefix}${prefix}\` Repeat your last ${prefix}roll. Maybe the next one will be better...`,
         accept: (cmd) => cmd === prefix, // i.e. react to !! if prefix is !
-        handle: (message, args) => {
+        handle: async (message, args) => {
             logger.debug({ args }, "Reroll");
             const last = lastRoll[message.member.id];
-            let result = last ? doRoll(last, message) : 'try rolling something first';
-            return facade.reply(message, result);
+            return facade.reply(message, last ? rollCommon(last, message) : 'try rolling something first';);
         }
     });
 };
