@@ -32,7 +32,7 @@ describe('Roll command', () => {
         expect(rollCmd.accept('roll')).toBe(true);
     });
 
-    it('allows a roll to be suffixed with a message', () => {
+    it('allows a roll to be suffixed with a message', async () => {
         spyOn(facade, 'reply').and.resolveTo('not used');
         spyOn(rolls, 'roll').and.returnValue('you rolled: 4');
 
@@ -42,20 +42,19 @@ describe('Roll command', () => {
         expect(rollCmd.handle).toBeDefined();
 
         const message = { member: { id: 'member id' } };
-        let ret = rollCmd.handle(message, '1d20 + 1 # attack the boss', 'roll');
-        expect(ret).toEqual(jasmine.any(Promise));
+        await rollCmd.handle(message, '1d20 + 1 # attack the boss', 'roll');
         expect(rolls.roll).toHaveBeenCalledOnceWith('1d20 + 1');
         expect(facade.reply).toHaveBeenCalledOnceWith(message, 'you rolled: 4 (attack the boss)');
 
         rolls.roll.calls.reset();
         facade.reply.calls.reset();
-        ret = rollCmd.handle(message, '1d20+1#attack the boss', 'roll');
+        await rollCmd.handle(message, '1d20+1#attack the boss', 'roll');
         expect(rolls.roll).toHaveBeenCalledOnceWith('1d20+1');
         expect(facade.reply).toHaveBeenCalledWith(message, 'you rolled: 4 (attack the boss)');
 
         rolls.roll.calls.reset();
         facade.reply.calls.reset();
-        ret = rollCmd.handle(message, '#attack the boss', 'roll');
+        await rollCmd.handle(message, '#attack the boss', 'roll');
         expect(rolls.roll).toHaveBeenCalledOnceWith('');
         expect(facade.reply).toHaveBeenCalledWith(message, 'you rolled: 4 (attack the boss)');
     });
