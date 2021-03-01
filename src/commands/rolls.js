@@ -94,7 +94,7 @@ export default (facade, logger) => {
         handle: async (message, args) => {
             logger.debug({ args }, "Reroll");
             const last = lastRoll[message.member.id];
-            return facade.reply(message, last ? rollCommon(last, message) : 'try rolling something first';);
+            return facade.reply(message, last ? rollCommon(last, message) : 'try rolling something first');
         }
     });
 };
