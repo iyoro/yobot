@@ -3,7 +3,7 @@
  * Command object.
  * @typedef Command
  * @property {function(string):boolean} accept Acceptance function
- * @property {function(Message, string, array):Promise<Message|Message[]>} handle Message handling function
+ * @property {function(Message, string, string):Promise<Message|Message[]>} handle Message handling function
  * @property {string} name Command name for humans/help.
  * @property {string} description Command description/usage info
  * @property {boolean} hidden Whether the command is visible externally

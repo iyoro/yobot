@@ -20,6 +20,6 @@ export default facade => ({
         const parts = message.content.split(/\s/);
         const cmd = parts[0].substring(1);
         const args = parts.length > 1 ? parts.slice(1) : [];
-        facade.exec(message, cmd, args);
+        facade.exec(message, cmd, args.join(' '));
     }
 });

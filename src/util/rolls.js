@@ -25,11 +25,11 @@ class RollError extends Error {
 
 /**
  * Makes a roll using the expression in the args.
- * @param {Array} args Roll args (tokens like 1d20, +2, etc.)
+ * @param {string} args Roll args (string of tokens like 1d20, +2, etc.)
  * @returns {string} Message to send for this roll.
  */
 const roll = (args) => {
-    const expr = args.length === 0 ? '1d20' : args.join(' ');
+    const expr = args.length === 0 ? '1d20' : args;
     try {
         const roller = parse(expr);
         const result = roller(false);
