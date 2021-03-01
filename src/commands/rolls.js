@@ -71,11 +71,8 @@ export default (facade, logger) => {
     facade.addCommand({
         icon: ':game_die:',
         name: 'Roll',
-        description: `\`${prefix}roll 4d6+2\` Roll dice with expressions made of dice and fixed values\n`
-            + 'Standard dice expressions like `d20` and `4d8` are supported. Fudge/Fate dice are supported'
-            + ' with `dF`. You can use `d%` to mean `d100` (both work).'
-            + ' And finally there\'s a bewildering array of modifiers like explosion, re-roll,'
-            + ' keep/drop highest/lowest. Click on the title above to see the full documentation.',
+        description: 'Roll dice with expressions made of dice and fixed values, e.g.'
+            + `\`${prefix}roll 4d6+2\` and optionally including a message on the end with \`# attack the skeleton\``,
         accept: (cmd) => cmd === 'roll',
         handle: async (message, args) => {
             logger.debug({ args }, "Roll");
