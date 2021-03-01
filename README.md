@@ -29,6 +29,12 @@ Roll one or several dice, apply modifiers and add/subtract fixed values. Some ex
 * `-4d6` rolls `4d6` and then negates all the values (i.e. the result is from `-4` to `-24`)
 * `2d20kl` rolls disadvantage (keep lowest), `2d20kh` rolls advantage (keep highest)
 
+You can, optionally, add a custom message suffix onto your roll by adding a hash `#` and then some text, like this:
+
+```
+!roll 2d20kl1 # disadvantage because sleepy
+```
+
 The bot uses the `fdice` library to roll dice which suports some fairly complex expressions, so [please click or tap here to get to fdice's documentation which explains all of the possible things you can do in a roll.](https://github.com/iyoro/fdice#dice-notation)
 
 The response to a `!roll` looks like this:
@@ -43,7 +49,8 @@ The middle section is omitted if your roll produces a single value.
 
 ### `!!` aka reroll
 
-The reroll command repeats your previous `!roll`.
+The reroll command repeats your previous `!roll` *exactly the same*, including any `# text` on the end. 
+It does not have any options of its own.
 
 ### `!help`
 
