@@ -2,7 +2,8 @@
 /** 
  * Command object.
  * @typedef Command
- * @property {function(string):boolean} accept Acceptance function
+ * @property {function(string):boolean} accept Acceptance function. It is given the command name, lowercased, to test
+ * if the command's handler can process it.
  * @property {function(Message, string, string):Promise<Message|Message[]>} handle Message handling function
  * @property {string} name Command name for humans/help.
  * @property {string} description Command description/usage info

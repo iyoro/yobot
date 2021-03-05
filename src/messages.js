@@ -18,7 +18,7 @@ export default facade => ({
         if (!message.content.startsWith(facade.config.commandPrefix)) { return; }
         if (!/^.\S/.test(message.content)) { return; } // Ignores "! foo"
         const parts = message.content.split(/\s/);
-        const cmd = parts[0].substring(1);
+        const cmd = parts[0].substring(1).toLowerCase();
         const args = parts.length > 1 ? parts.slice(1) : [];
         facade.exec(message, cmd, args.join(' '));
     }

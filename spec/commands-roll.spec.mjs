@@ -30,6 +30,7 @@ describe('Roll command', () => {
         expect(rollCmd.accept).toBeDefined();        
         expect(rollCmd.accept('something')).toBe(false);
         expect(rollCmd.accept('roll')).toBe(true);
+        // Don't check accepting !Roll here too, it's up to the message handler to mangle the cmd down to lowercase.
     });
 
     it('allows a roll to be suffixed with a message', async () => {

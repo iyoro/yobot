@@ -26,6 +26,11 @@ describe('Message handler', () => {
             expect(facade.exec).toHaveBeenCalledTimes(1);
         });
 
+        it('ignores command case', () => {
+            messages.onMessage(aMessage(false, 'dice-room', '!SOMEthing'));
+            expect(facade.exec).toHaveBeenCalledOnceWith(jasmine.anything(), 'something', jasmine.anything());
+        });
+
         it('ignores messages sent by bots', () => {
             messages.onMessage(aMessage(true, 'dice-room', '!something'));
             expect(facade.exec).not.toHaveBeenCalled();
