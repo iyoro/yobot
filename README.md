@@ -71,4 +71,4 @@ This is done in the following contexts:
 * When chat messages are received and processed (e.g. to look for `!commands`). This data is not stored.
 * Internal error and debug log messages are sometimes generated to allow the developer to investigate problems. These can include discord account names (@something#1234) and account identifiers. All log messages are ephemeral; yobot does not create persistent log files.
 
-User preferences, command history & similar per-user data that yobot needs to keep in to persistent storage are anonymised using irreversible hashes, preventing recovery of Discord user account names and identifiers. In GDPR terms this means the data is *anonymised*, is no longer counts as *personal data*.
+User preferences, command history & similar per-user data that yobot needs to keep in persistent storage are anonymised using irreversible hashes, preventing recovery of Discord user account names and identifiers. In GDPR terms this means the data is *anonymised*, is no longer counts as *personal data*.
