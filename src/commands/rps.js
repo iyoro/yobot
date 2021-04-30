@@ -20,7 +20,8 @@ export default (facade, logger) => {
     facade.addCommand({
         icon: ':rock:',
         name: 'Rock, paper, scissors',
-        description: 'Randomly picks one of three values from the well-known three-way tie-breaker game.',
+        description: '`!rps` Randomly picks one of three values from the well-known three-way tie-breaker game. '
+            + 'Alternatively, use `!sps` to get soulgem, parchment, shears.',
         accept: (cmd) => cmd === 'rps',
         handle: common('rps', facade, logger),
     });
