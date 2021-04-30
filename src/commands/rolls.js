@@ -1,5 +1,5 @@
 /**
- * @file Provides a dice roll commands to explain all the other commands, using their names and descriptions.
+ * @file Provides a dice roll commands to roll dice.
  */
 /** @typedef {import('../facade').default} Facade */
 /** @typedef {import('discord.js').Message } Message */
@@ -12,7 +12,7 @@ import rolls from '../util/rolls.js';
  */
 const lastRoll = {};
 
-export const separateRollArgs = (args) => {
+const separateRollArgs = args => {
     // Separate off a possible 'comment' at the end.
     const pos = args.indexOf('#');
     let expr, suffix;

@@ -27,7 +27,7 @@ describe('Roll command', () => {
         roll(facade, logger);
         const rollCmd = commands.find(it => it.name === 'Roll');
         expect(rollCmd).toBeDefined();
-        expect(rollCmd.accept).toBeDefined();        
+        expect(rollCmd.accept).toBeDefined();
         expect(rollCmd.accept('something')).toBe(false);
         expect(rollCmd.accept('roll')).toBe(true);
         // Don't check accepting !Roll here too, it's up to the message handler to mangle the cmd down to lowercase.
