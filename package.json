@@ -1,6 +1,6 @@
 {
   "name": "yobot",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A discord rollbot",
   "main": "src/app.js",
   "type": "module",
