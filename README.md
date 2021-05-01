@@ -15,7 +15,7 @@ Commands are prefixed with `!` but this can be easily changed on request.
 |---|---|
 | `!roll` | Rolls some dice |
 | `!!` | Repeats your last `!roll` |
-| `!rps` or `!sps` | Play rock, paper, scissors |
+| `!rps` or `!spc` | Play rock, paper, scissors |
 | `!help` | Shows a summary of each command |
 
 ### `!roll`
@@ -53,17 +53,17 @@ The middle section is omitted if your roll produces a single value.
 The reroll command repeats your previous `!roll` *exactly the same*, including any `# text` on the end. 
 It does not have any options of its own.
 
-### `!rps` and `!sps`
+### `!rps` and `!spc`
 
 These play two variations of Rock, Paper, Scissors, the only difference is the names used.
 
 It is essentially a glorified `!roll d3`.
 
-| !rps | !sps |s
+| !rps | !spc |s
 |---|---|
 | Rock | Soulgem |
 | Paper | Parchment |
-| Scissors | Shears |
+| Scissors | Clippers |
 
 ### `!help`
 

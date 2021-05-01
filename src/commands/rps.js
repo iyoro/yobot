@@ -21,15 +21,15 @@ export default (facade, logger) => {
         icon: ':rock:',
         name: 'Rock, paper, scissors',
         description: '`!rps` Randomly picks one of three values from the well-known three-way tie-breaker game. '
-            + 'Alternatively, use `!sps` to get soulgem, parchment, shears.',
+            + 'Alternatively, use `!spc` to get soulgem, parchment, clippers.',
         accept: (cmd) => cmd === 'rps',
         handle: common('rps', facade, logger),
     });
 
     facade.addCommand({
-        name: 'Soulgem, parchment, shears',
+        name: 'Soulgem, parchment, clippers',
         hidden: true,
-        accept: (cmd) => cmd === 'sps',
-        handle: common('sps', facade, logger),
+        accept: (cmd) => cmd === 'spc',
+        handle: common('spc', facade, logger),
     });
 };

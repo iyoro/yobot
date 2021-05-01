@@ -17,7 +17,7 @@ describe('Rock, paper, scissors command provider', () => {
         rps(facade, logger);
         expect(facade.addCommand).toHaveBeenCalledTimes(2);
         expect(facade.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Rock, paper, scissors' }));
-        expect(facade.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Soulgem, parchment, shears' }));
+        expect(facade.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Soulgem, parchment, clippers' }));
     });
 });
 
@@ -29,7 +29,7 @@ describe('Rock, paper, scissors command', () => {
         expect(rpsCmd).toBeDefined();
         expect(rpsCmd.accept).toBeDefined();
         expect(rpsCmd.accept('rps')).toBe(true);
-        expect(rpsCmd.accept('sps')).toBe(false);
+        expect(rpsCmd.accept('spc')).toBe(false);
     });
 
     it('generates suitable outputs for r-p-s', async () => {
@@ -48,15 +48,15 @@ describe('Rock, paper, scissors command', () => {
     });
 });
 
-describe('Soulgem, parchment, shears command', () => {
-    it('accepts the \'sps\' command', () => {
+describe('Soulgem, parchment, clippers command', () => {
+    it('accepts the \'spc\' command', () => {
         expect(facade.addCommand).not.toHaveBeenCalled();
         rps(facade, logger);
-        const spsCmd = commands.find(it => it.name === 'Soulgem, parchment, shears');
-        expect(spsCmd).toBeDefined();
-        expect(spsCmd.accept).toBeDefined();
-        expect(spsCmd.accept('sps')).toBe(true);
-        expect(spsCmd.accept('rps')).toBe(false);
+        const spcCmd = commands.find(it => it.name === 'Soulgem, parchment, clippers');
+        expect(spcCmd).toBeDefined();
+        expect(spcCmd.accept).toBeDefined();
+        expect(spcCmd.accept('spc')).toBe(true);
+        expect(spcCmd.accept('rps')).toBe(false);
     });
 
     it('generates suitable outputs for s-p-s', async () => {
@@ -64,13 +64,13 @@ describe('Soulgem, parchment, shears command', () => {
         spyOn(util, 'play').and.returnValue('parchment');
 
         rps(facade, logger);
-        const spsCmd = commands.find(it => it.name === 'Soulgem, parchment, shears');
-        expect(spsCmd).toBeDefined();
-        expect(spsCmd.handle).toBeDefined();
+        const spcCmd = commands.find(it => it.name === 'Soulgem, parchment, clippers');
+        expect(spcCmd).toBeDefined();
+        expect(spcCmd.handle).toBeDefined();
 
         const message = { member: { id: 'member id' } };
-        await spsCmd.handle(message, 'not used', 'not used');
-        expect(util.play).toHaveBeenCalledOnceWith('sps');
+        await spcCmd.handle(message, 'not used', 'not used');
+        expect(util.play).toHaveBeenCalledOnceWith('spc');
         expect(facade.reply).toHaveBeenCalledOnceWith(message, 'parchment');
     });
 });

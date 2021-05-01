@@ -5,7 +5,7 @@ import { parse } from 'fdice';
 
 const RPS_PREFIX = {
     'rps': 'Rock, paper, scissors',
-    'sps': 'Soulgem, parchment, shears'
+    'spc': 'Soulgem, parchment, clippers'
 };
 
 const RPS_FORMATS = {
@@ -14,10 +14,10 @@ const RPS_FORMATS = {
         2: '**Paper** :page_with_curl:',
         3: '**Scissors** :scissors:',
     },
-    'sps': {
+    'spc': {
         1: '**Soulgem** :gem:',
         2: '**Parchment** :scroll:',
-        3: '**Shears** :scissors:',
+        3: '**Clippers** :scissors:',
     },
 };
 
