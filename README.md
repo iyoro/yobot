@@ -65,6 +65,21 @@ It is essentially a glorified `!roll d3`.
 | Paper | Parchment |
 | Scissors | Clippers |
 
+### Lore calendar commaands: `!day`, `!date` and `!months`
+
+These tell you about the Elder Scrolls lore calendar. Two assumptions are made:
+
+* The time in-universe uses the UTC (GMT+0) timezone.
+* The in-game year was 2E 582 at the time of the release of Elder Scrolls Online in 2014, and time has continued to tick 1:1 with realtime since then. In other words, the in-universe year is the current year minus 1432.
+
+Months and days of the week are mapped 1:1 to those listed on http://en.uesp.net/wiki/Lore:Calendar
+
+| Command | What it does | Example output |
+|---|---|---|
+| `!day` | Tells you the current day | `It is Loredas`
+| `!date` | Gives you a full in-character date including common and Jel month names | `It is Loredas the 19th of Midyear (Hist-Tsoko, Elder Hist) 2E 589`
+| `!months` | Lists all of the months with common and Jel names, and highlights the current one | -
+
 ### `!help`
 
 Will show a brief summary of all of the commands. This command can only be used once per minute.
