@@ -71,8 +71,6 @@ const date = date => {
 
 const months = date => {
     const m = date.getUTCMonth();
-    // Pad the month names to the longest ('Morning Star' @ 12)
-    // Pad the argo names to the longest "Argo (Translation)" ("Shaja-Nushmeeko (Semi-Humanoid Lizard)" @ 38).
     return CALENDAR.months.reduce((acc, month, i) => {
         const fix = i === m ? '**' : '';
         const argo = CALENDAR.argoMonths[i][0] + ', *' + CALENDAR.argoMonths[i][1] + '*';
