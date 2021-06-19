@@ -11,13 +11,26 @@ import calendar from '../util/calendar.js';
  * @param {Facade} facade Bot command facade
  * @param {Logger} logger Logger for this set of commands.
  */
-export default (facade, logger) => {
-    logger.debug("Adding calendar commands");
+export default (facade) => {
     facade.addCommand({
         icon: ':calendar:',
         name: 'Lore day',
         description: '`!day` Gets the current in-character lore day.',
         accept: cmd => cmd === 'day',
-        handle: async message => facade.reply(message, `It is ${calendar.day()}`),
+        handle: async message => facade.reply(message, `It is ${calendar.day(new Date())}`),
+    });
+    facade.addCommand({
+        icon: ':calendar_spiral:',
+        name: 'Lore date',
+        description: '`!date` Gets the current in-character lore date.',
+        accept: cmd => cmd === 'date',
+        handle: async message => facade.reply(message, `It is ${calendar.date(new Date())}`),
+    });
+    facade.addCommand({
+        icon: ':last_quarter_moon:',
+        name: 'Lore months',
+        description: '`!months` Gets a list of lore months with the current in-character month highlighted.',
+        accept: cmd => cmd === 'months',
+        handle: async message => facade.reply(message, 'Here you go!\n' + calendar.months(new Date())),
     });
 };
