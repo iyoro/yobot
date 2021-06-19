@@ -22,7 +22,6 @@ describe('Calendar', () => {
     });
     it('lists months', () => {
         const str = calendar.months(DATE);
-        console.debug(str);
         expect(str).toContain("**Sun's Height (Thtithil-Gah, *Egg-Basket*)** :arrow_left: You are here!");
     });
 });
