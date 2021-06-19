@@ -59,7 +59,7 @@ These play two variations of Rock, Paper, Scissors, the only difference is the n
 
 It is essentially a glorified `!roll d3`.
 
-| !rps | !spc |s
+| !rps | !spc |
 |---|---|
 | Rock | Soulgem |
 | Paper | Parchment |
