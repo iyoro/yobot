@@ -23,10 +23,10 @@ describe('Lore day command', () => {
     it('accepts the \'day\' command', () => {
         expect(facade.addCommand).not.toHaveBeenCalled();
         calendar(facade, logger);
-        const rpsCmd = commands.find(it => it.name === 'Lore day');
-        expect(rpsCmd).toBeDefined();
-        expect(rpsCmd.accept).toBeDefined();
-        expect(rpsCmd.accept('day')).toBe(true);
+        const dayCmd = commands.find(it => it.name === 'Lore day');
+        expect(dayCmd).toBeDefined();
+        expect(dayCmd.accept).toBeDefined();
+        expect(dayCmd.accept('day')).toBe(true);
     });
 
     it('generates suitable outputs', async () => {
@@ -49,10 +49,10 @@ describe('Lore date command', () => {
     it('accepts the \'date\' command', () => {
         expect(facade.addCommand).not.toHaveBeenCalled();
         calendar(facade, logger);
-        const rpsCmd = commands.find(it => it.name === 'Lore date');
-        expect(rpsCmd).toBeDefined();
-        expect(rpsCmd.accept).toBeDefined();
-        expect(rpsCmd.accept('date')).toBe(true);
+        const dateCmd = commands.find(it => it.name === 'Lore date');
+        expect(dateCmd).toBeDefined();
+        expect(dateCmd.accept).toBeDefined();
+        expect(dateCmd.accept('date')).toBe(true);
     });
 
     it('generates suitable outputs', async () => {
