@@ -3,7 +3,10 @@ import Facade from '../src/facade.js';
 
 let facade, messages;
 beforeEach(() => {
-    facade = new Facade({ commandPrefix: '!' }, null);
+    facade = new Facade({
+        commandPrefix: '!',
+        channelPattern: /dice|roll/,
+    }, null);
     spyOn(facade, 'exec').and.stub();
     messages = handlers(facade);
 });
