@@ -14,7 +14,7 @@ export default facade => ({
      */
     onMessage: message => {
         if (message.author.bot) { return; }
-        if (!/dice|roll/.test(message.channel.name)) { return; }
+        if (!facade.config.channelPattern.test(message.channel.name)) { return; }
         if (!message.content.startsWith(facade.config.commandPrefix)) { return; }
         if (!/^.\S/.test(message.content)) { return; } // Ignores "! foo"
         const parts = message.content.split(/\s/);
