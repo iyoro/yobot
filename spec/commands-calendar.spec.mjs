@@ -41,7 +41,33 @@ describe('Lore day command', () => {
         const message = { member: { id: 'member id' } };
         await dayCmd.handle(message, 'not used', 'not used');
         expect(util.day).toHaveBeenCalledTimes(1);
-        expect(facade.reply).toHaveBeenCalledOnceWith(message, 'It is Fredas');
+        expect(facade.reply).toHaveBeenCalledOnceWith(message, 'It is **Fredas**');
+    });
+});
+
+describe('Lore month command', () => {
+    it('accepts the \'month\' command', () => {
+        expect(facade.addCommand).not.toHaveBeenCalled();
+        calendar(facade, logger);
+        const monthCmd = commands.find(it => it.name === 'Lore month');
+        expect(monthCmd).toBeDefined();
+        expect(monthCmd.accept).toBeDefined();
+        expect(monthCmd.accept('month')).toBe(true);
+    });
+
+    it('generates suitable outputs', async () => {
+        spyOn(facade, 'reply').and.resolveTo('not used');
+        spyOn(util, 'month').and.returnValue('Frostfall');
+
+        calendar(facade, logger);
+        const monthCmd = commands.find(it => it.name === 'Lore month');
+        expect(monthCmd).toBeDefined();
+        expect(monthCmd.handle).toBeDefined();
+
+        const message = { member: { id: 'member id' } };
+        await monthCmd.handle(message, 'not used', 'not used');
+        expect(util.month).toHaveBeenCalledTimes(1);
+        expect(facade.reply).toHaveBeenCalledOnceWith(message, 'It is **Frostfall**');
     });
 });
 

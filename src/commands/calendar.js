@@ -17,7 +17,14 @@ export default (facade) => {
         name: 'Lore day',
         description: '`!day` Gets the current in-character lore day.',
         accept: cmd => cmd === 'day',
-        handle: async message => facade.reply(message, `It is ${calendar.day(new Date())}`),
+        handle: async message => facade.reply(message, `It is **${calendar.day(new Date())}**`),
+    });
+    facade.addCommand({
+        icon: ':full_moon:',
+        name: 'Lore month',
+        description: '`!month` Gets the current in-character month.',
+        accept: cmd => cmd === 'month',
+        handle: async message => facade.reply(message, `It is **${calendar.month(new Date())}**`),
     });
     facade.addCommand({
         icon: ':calendar_spiral:',
