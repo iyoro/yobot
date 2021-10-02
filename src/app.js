@@ -5,6 +5,7 @@ import config from './config.js';
 import Facade from './facade.js';
 import commandGroups from './commands/index.js';
 import messageHandler from './messages.js';
+import ServiceAPI from './service.js';
 
 // Root logger
 const logger = pino({ level: config.logLevel });
@@ -26,10 +27,16 @@ client.on('rateLimit', limits => logger.info({ limits }, 'Rate limited'));
 client.on('error', err => logger.error({ err }, 'Client error'));
 client.on('message', messages.onMessage);
 
+const api = new ServiceAPI(client, logger);
+
 client.login(config.clientToken)
     .then(() => logger.info('Client logged in'))
+    .then(() => api.up().catch(error => {
+        logger.error(error, 'API initialisation failed');
+        process.exit(4);
+    }))
     .catch(error => {
-        logger.error(error, 'Client login failed');
+        logger.error(error, 'Client initialisation failed');
         process.exit(2);
     });
 
@@ -40,6 +47,8 @@ process.on('uncaughtException', function (err) {
 
 process.once('SIGINT', () => {
     logger.info("Closing down");
-    client.destroy();
-    process.exit(0);
+    api.down()
+        .then(() => client.destroy())
+        .then(() => process.exit(0))
+        .catch(() => process.exit(1));
 });
