@@ -19,14 +19,14 @@
   "author": "iyoro",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^12.5.1",
+    "discord.js": "^13",
     "express": "^4.17.1",
     "fdice": "^1.0.2",
     "ordinal": "^1.0.3",
-    "pino": "^6.11.1"
+    "pino": "^6.13.3"
   },
   "devDependencies": {
     "eslint-plugin-jasmine": "^4.1.2",
-    "jasmine": "^3.6.4"
+    "jasmine": "^3.9.0"
   }
 }

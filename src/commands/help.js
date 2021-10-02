@@ -34,7 +34,7 @@ export default (facade, logger) => {
                     embed.addField(`${command.icon ? command.icon : ':exclamation:'} ${command.name}`, command.description);
                 }
                 embed.setTimestamp().setFooter('Made for you with <3');
-                facade.send(message.channel, embed).then(() => lastHelpTime = message.createdTimestamp);
+                facade.reply(message, { embeds: [embed] }).then(() => lastHelpTime = message.createdTimestamp);
             }
         }
     });

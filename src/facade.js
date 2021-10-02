@@ -57,25 +57,26 @@ export default class Facade {
      * Send a message.
      *
      * @param {Discord.TextChannel} channel Where to send.
-     * @param {Discord.StringResolvable} text What to send.
+     * @param {string|Discord.MessagePayload|Discord.MessageOptions} content What to send.
      * @returns {Promise<Message|Message[]>}
      */
-    send(channel, text) {
-        const p = channel.send(text);
+    send(channel, content) {
+        const p = channel.send(content);
         p.then(sent => this.logger.debug({ sent }, 'Sent message'))
             .catch(err => this.logger.error({ err }, 'Send message failed'));
         return p;
     }
 
     /**
-     * Send a message as a reply to another.
+     * Send a a message as a reply to another.
      * 
      * @param {Discord.Message} message Message being replied-to.
-     * @param {Discord.StringResolvable} ressponse What to reply with.
+     * @param {string|Discord.MessagePayload|Discord.MessageOptions} content What to reply with.
      * @returns {Promise<Message|Message[]>}
      */
-    reply(message, text) {
-        const p = message.channel.send(text, { reply: message });
+    reply(message, content) {
+        let payload = (typeof content === 'string') ? { content } : content;
+        const p = message.channel.send({ ...payload, reply: { messageReference: message } });
         p.then(sent => this.logger.debug({ sent }, 'Sent reply'))
             .catch(err => this.logger.error({ err }, 'Send reply failed'));
         return p;

@@ -18,14 +18,19 @@ for (let group in commandGroups) {
 }
 const messages = messageHandler(facade);
 
-const client = new Discord.Client();
+const intents = new Discord.Intents();
+intents.add(Discord.Intents.FLAGS.GUILDS);
+intents.add(Discord.Intents.FLAGS.GUILD_MESSAGES);
+intents.add(Discord.Intents.FLAGS.DIRECT_MESSAGES);
+
+const client = new Discord.Client({ intents });
 client.once('invalidated', () => {
     logger.info('Client invalidated, shutting down');
     process.exit(2);
 });
 client.on('rateLimit', limits => logger.info({ limits }, 'Rate limited'));
 client.on('error', err => logger.error({ err }, 'Client error'));
-client.on('message', messages.onMessage);
+client.on('messageCreate', messages.onMessage);
 
 const api = new ServiceAPI(client, logger);
 

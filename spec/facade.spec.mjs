@@ -48,7 +48,7 @@ describe('Facade', () => {
     });
 
     it('executes a command if accepted by a handler', () => {
-        const message = new Message();
+        const message = {}; // This would be a Discord.js Message, but newing off a stub of those isn't trivial.
         // Add a fallback command which accepts.
         const fallback = mkcommand('fb');
         const fbAccept = spyOn(fallback, 'accept').withArgs('something').and.returnValue(true);
@@ -79,7 +79,7 @@ describe('Facade', () => {
         const channel = { send() {/*stub*/ } };
         const message = { channel };
         // Reply must go back to the channel the message came from.
-        const send = spyOn(message.channel, 'send').withArgs('some text', { reply: message }).and.resolveTo('');
+        const send = spyOn(message.channel, 'send').withArgs({ content: 'some text', reply: { messageReference: message } }).and.resolveTo('');
         facade.reply(message, 'some text');
         expect(send).toHaveBeenCalledTimes(1);
     });
