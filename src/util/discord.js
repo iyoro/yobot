@@ -49,3 +49,19 @@ const fetchTextChannel = async (client, snowflake, allowThreads, allowDms) => cl
 export const getTextChannel = async (client, channel, allowThreads = true, allowDms = true) => typeof channel === 'string'
     ? fetchTextChannel(client, channel, allowThreads, allowDms)
     : Promise.resolve(channel);
+
+/**
+* Get the ID for who sent a message. This is either the guild member ID (guild messages) or the author ID (DMs).
+* 
+* @param {Message} message A message that was received.
+* @param {boolean} prefix Whether "M" or "A" and a colon should be prefixed to the returned id.
+* @returns A key to use for caching/memorising things about it.
+*/
+export const memberOrAuthorKeyCommon = (message, prefix = true) => {
+    const pre = prefix ? (message.member ? 'M:' : 'A:') : '';
+    const item = message.member ?? message.author;
+    return pre + item.id;
+}
+
+export const memberOrAuthorId = message => memberOrAuthorKeyCommon(message, false);
+export const memberOrAuthorKey = message => memberOrAuthorKeyCommon(message, true);

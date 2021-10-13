@@ -5,6 +5,8 @@
 /** @typedef {import('discord.js').Message } Message */
 import rolls from '../util/rolls.js';
 
+import { memberOrAuthorKey } from '../util/discord.js';
+
 /**
  * Somewhere to store who-last-rolled-what.
  * @constant
@@ -25,16 +27,6 @@ const separateRollArgs = args => {
     }
     return { expr, suffix };
 };
-
-/**
- * Get the memory/cache key for a message. This is either the guild member ID (guild messages) or the author ID (DMs).
- * 
- * @param {Message} message A message that was received.
- * @returns A key to use for caching/memorising things about it.
- */
-const memberOrAuthorKey = message => message.member
-    ? 'M:' + message.member.id
-    : 'A:' + message.author.id;
 
 /**
  * Adds commands to the bot facade.
