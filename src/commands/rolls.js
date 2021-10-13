@@ -27,6 +27,16 @@ const separateRollArgs = args => {
 };
 
 /**
+ * Get the memory/cache key for a message. This is either the guild member ID (guild messages) or the author ID (DMs).
+ * 
+ * @param {Message} message A message that was received.
+ * @returns A key to use for caching/memorising things about it.
+ */
+const memberOrAuthorKey = message => message.member
+    ? 'M:' + message.member.id
+    : 'A:' + message.author.id;
+
+/**
  * Adds commands to the bot facade.
  *
  * @param {Facade} facade Bot command facade
@@ -39,17 +49,17 @@ export default (facade, logger) => {
      * Does a roll, including producing a user-facing error message due to e.g. bad expressions.
      * 
      * @param {string} expr Dice expression
-     * @param {string} member Originating member identifier.
+     * @param {string} memberOrAuthor Originating member or author identifier.
      */
-    const doRoll = (expr, member) => {
+    const doRoll = (expr, memberOrAuthor) => {
         let result;
         try {
             result = rolls.roll(expr);
         } catch (err) { // RollError
             if (err.quiet) {
-                logger.info({ args: expr, member }, err.message);
+                logger.info({ args: expr, memberOrAuthor }, err.message);
             } else {
-                logger.error({ args: expr, member, err }, err.message);
+                logger.error({ args: expr, memberOrAuthor, err }, err.message);
             }
             result = err.userMessage;
         }
@@ -64,7 +74,7 @@ export default (facade, logger) => {
      */
     const rollCommon = (args, message) => {
         let { expr, suffix } = separateRollArgs(args);
-        const result = doRoll(expr, message.member.id);
+        const result = doRoll(expr, memberOrAuthorKey(message));
         return suffix ? `${result} (${suffix})` : result;
     };
 
@@ -77,9 +87,11 @@ export default (facade, logger) => {
         handle: async (message, args) => {
             logger.debug({ args }, "Roll");
             const result = rollCommon(args, message);
-            const p = facade.reply(message, result);
-            p.then(() => lastRoll[message.member.id] = args);
-            return p;
+            return facade.reply(message, result)
+                .then(ret => {
+                    lastRoll[memberOrAuthorKey(message)] = args;
+                    return ret;
+                });
         }
     });
 
@@ -90,7 +102,7 @@ export default (facade, logger) => {
         accept: (cmd) => cmd === prefix, // i.e. react to !! if prefix is !
         handle: async (message, args) => {
             logger.debug({ args }, "Reroll");
-            const last = lastRoll[message.member.id];
+            const last = lastRoll[memberOrAuthorKey(message)];
             return facade.reply(message, last != null ? rollCommon(last, message) : 'try rolling something first');
         }
     });
