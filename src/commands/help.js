@@ -4,9 +4,10 @@
 /** @typedef {import('../facade').default} Facade */
 
 import { MessageEmbed } from 'discord.js';
+import { memberOrAuthorId } from '../util/discord.js';
 
 // Last time help was requested. TODO multiserver: needs to be a map, keyed by guild.
-let lastHelpTime = 0;
+let lastHelpTime = {};
 
 /**
  * Adds commands to the bot facade.
@@ -21,8 +22,12 @@ export default (facade, logger) => {
         description: '`!help` You are here.',
         accept: (cmd) => cmd === 'help',
         handle: async message => {
-            const cooldown = message.createdTimestamp > (lastHelpTime + 60000);
-            logger.debug({ member: message.member.id, command: 'help', cooldown });
+            const mid = memberOrAuthorId(message);
+            if (lastHelpTime[mid] == null) {
+                lastHelpTime[mid] = 0;
+            }
+            const cooldown = message.createdTimestamp > (lastHelpTime[mid] + 60000);
+            logger.debug({ memberOrAuthor: mid, command: 'help', cooldown });
             if (cooldown) {
                 const commands = facade.getCommands();
                 const embed = new MessageEmbed()
@@ -34,7 +39,7 @@ export default (facade, logger) => {
                     embed.addField(`${command.icon ? command.icon : ':exclamation:'} ${command.name}`, command.description);
                 }
                 embed.setTimestamp().setFooter('Made for you with <3');
-                return facade.reply(message, { embeds: [embed] }).then(() => lastHelpTime = message.createdTimestamp);
+                return facade.reply(message, { embeds: [embed] }).then(() => lastHelpTime[mid] = message.createdTimestamp);
             }
         }
     });
