@@ -1,4 +1,4 @@
-FROM node:14-alpine as node-environment
+FROM node:16-alpine as node-environment
 
 ENV TZ=UTC
 ENV LOG_LEVEL=info
