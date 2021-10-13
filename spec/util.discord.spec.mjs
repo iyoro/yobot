@@ -28,7 +28,7 @@ const otherKindOfChannel = {
 
 describe('Discord utilities', () => {
     describe('getTextChannel', () => {
-        it('does not re-fetch an existing channel', async (done) => {
+        it('does not re-fetch an existing channel', (done) => {
             const fetch = spyOn(client.channels, 'fetch').and.stub();
             getTextChannel(client, textChannel, true).then(chan => {
                 expect(chan).toBe(textChannel);
@@ -37,7 +37,7 @@ describe('Discord utilities', () => {
             });
         });
 
-        it('fetches a text channel by snowflake', async (done) => {
+        it('fetches a text channel by snowflake', (done) => {
             const fetch = spyOn(client.channels, 'fetch').withArgs('1').and.resolveTo(textChannel);
             getTextChannel(client, '1', false).then(chan => {
                 expect(chan).toBe(textChannel);
@@ -46,7 +46,7 @@ describe('Discord utilities', () => {
             });
         });
 
-        it('fetches a thread channel by snowflake when allowed', async (done) => {
+        it('fetches a thread channel by snowflake when allowed', (done) => {
             const fetch = spyOn(client.channels, 'fetch').withArgs('1').and.resolveTo(threadChannel);
             getTextChannel(client, '1', true, false).then(chan => {
                 expect(chan).toBe(threadChannel);
@@ -55,7 +55,7 @@ describe('Discord utilities', () => {
             });
         });
 
-        it('does not fetch a thread channel by snowflake when disallowed', async (done) => {
+        it('does not fetch a thread channel by snowflake when disallowed', (done) => {
             const fetch = spyOn(client.channels, 'fetch').withArgs('1').and.resolveTo(threadChannel);
             getTextChannel(client, '1', false, false).then(() => {
                 fail();
@@ -67,7 +67,7 @@ describe('Discord utilities', () => {
             });
         });
 
-        it('fetches a DM channel by snowflake when allowed', async (done) => {
+        it('fetches a DM channel by snowflake when allowed', (done) => {
             const fetch = spyOn(client.channels, 'fetch').withArgs('1').and.resolveTo(dmChannel);
             getTextChannel(client, '1', false, true).then(chan => {
                 expect(chan).toBe(dmChannel);
@@ -76,7 +76,7 @@ describe('Discord utilities', () => {
             });
         });
 
-        it('does not fetch a DM channel by snowflake when disallowed', async (done) => {
+        it('does not fetch a DM channel by snowflake when disallowed', (done) => {
             const fetch = spyOn(client.channels, 'fetch').withArgs('1').and.resolveTo(dmChannel);
             getTextChannel(client, '1', false, false).then(() => {
                 fail();
@@ -88,7 +88,7 @@ describe('Discord utilities', () => {
             });
         });
 
-        it('does not fetch any other kind of channel by snowflake', async (done) => {
+        it('does not fetch any other kind of channel by snowflake', (done) => {
             const fetch = spyOn(client.channels, 'fetch').withArgs('1').and.resolveTo(otherKindOfChannel);
             getTextChannel(client, '1', false, false).then(() => {
                 fail();
