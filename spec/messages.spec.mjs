@@ -19,8 +19,8 @@ describe('Message handler', () => {
     });
 
     describe('onMesssage', () => {
-        const aMessage = (bot, channel, content) => ({
-            author: { bot }, channel: { name: channel }, content
+        const aMessage = (bot, channel, content, thread, dm) => ({
+            author: { bot }, channel: { name: channel, isText() { return true; }, isThread() { return thread; }, type: dm ? 'DM' : 'GUILD_TEXT' }, content
         });
 
         it('invokes commands', () => {
