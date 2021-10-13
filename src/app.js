@@ -11,14 +11,14 @@ import ServiceAPI from './service.js';
 const logger = pino({ level: config.logLevel });
 
 const intents = new Discord.Intents();
+const partials = [];
 intents.add(Discord.Intents.FLAGS.GUILDS);
 intents.add(Discord.Intents.FLAGS.GUILD_MESSAGES);
 if (config.allowDms) {
     intents.add(Discord.Intents.FLAGS.DIRECT_MESSAGES);
+    partials.push("CHANNEL");
 }
-const partials = ["CHANNEL"];
-logger.debug({ intents: intents.toArray(), partials }, "Registering intents:");
-
+logger.debug({ intents: intents.toArray(), partials }, "Intents and partials");
 const client = new Discord.Client({ intents, partials });
 
 const commandLogger = logger.child({ name: 'command' });
