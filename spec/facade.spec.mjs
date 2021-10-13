@@ -1,13 +1,11 @@
 /**
  * @file Unit spec for the bot command facade.
  */
-import { Message } from 'discord.js';
 import pino from 'pino';
 import Facade from '../src/facade.js';
 
 const config = {}; // Not actually used atm.
 const logger = pino({ level: 'error' });
-
 const stubCommand = {
     description: '',
     accept: function (cmd) { return cmd == this.name; },
@@ -16,9 +14,11 @@ const stubCommand = {
 const mkcommand = (name) => Object.assign({ name }, stubCommand);
 
 /** @type Facade */
+let client;
 let facade;
 beforeEach(function () {
-    facade = new Facade(config, logger);
+    client = {};
+    facade = new Facade(config, logger, client);
 });
 
 describe('Facade', () => {
@@ -68,11 +68,65 @@ describe('Facade', () => {
         expect(fbHandle).toHaveBeenCalledTimes(1);
     });
 
-    it('can send a message to a channel', () => {
-        const channel = { send() {/*stub*/ } };
-        const send = spyOn(channel, 'send').withArgs('some text').and.resolveTo('');
-        facade.send(channel, 'some text');
-        expect(send).toHaveBeenCalledTimes(1);
+    it('can send a message to a channel provided directly', (done) => {
+        const channel = { send() { /*stub*/ } };
+        const send = spyOn(channel, 'send').withArgs('some text').and.resolveTo({});
+        facade.send(channel, 'some text').then(() => {
+            expect(send).toHaveBeenCalledTimes(1);
+            done();
+        });
+    });
+
+    it('can send a message to a channel provided as a snowflake', (done) => {
+        const channel = {
+            send() { },
+            isText() { return true; },
+            isThread() { return false; },
+        };
+        client.channels = { fetch() { } };
+        const getCh = spyOn(client.channels, 'fetch').withArgs('9').and.resolveTo(channel);
+        const send = spyOn(channel, 'send').withArgs('some text').and.resolveTo({});
+        facade.send('9', 'some text').then(() => {
+            expect(getCh).toHaveBeenCalledTimes(1);
+            expect(send).toHaveBeenCalledTimes(1);
+            done();
+        });
+    });
+
+    it('can send to a thread channel provided as a snowflake', (done) => {
+        const channel = {
+            send() { },
+            isText() { return true; },
+            isThread() { return true; },
+        };
+        client.channels = { fetch() { } };
+        const getCh = spyOn(client.channels, 'fetch').withArgs('9').and.resolveTo(channel);
+        const send = spyOn(channel, 'send').withArgs('some text').and.resolveTo({});
+        facade.send('9', 'some text').then(() => {
+            expect(getCh).toHaveBeenCalledTimes(1);
+            expect(send).toHaveBeenCalledTimes(1);
+            done();
+        });
+    });
+
+    it('can correctly fail to send to a non-text or thread channel provided as a snowflake', (done) => {
+        const channel = {
+            send() { },
+            isText() { return false; },
+            isThread() { return false; },
+        };
+        client.channels = { fetch() { } };
+        const getCh = spyOn(client.channels, 'fetch').withArgs('9').and.resolveTo(channel);
+        const send = spyOn(channel, 'send').withArgs('some text').and.resolveTo({});
+        facade.send('9', 'some text').then(() => {
+            fail();
+            done();
+        }).catch(e => {
+            expect(getCh).toHaveBeenCalledTimes(1);
+            expect(send).not.toHaveBeenCalled();
+            expect(e.message).toBe("9 is not a text channel");
+            done();
+        });
     });
 
     it('can send a reply to a message', () => {

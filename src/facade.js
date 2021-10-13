@@ -1,4 +1,7 @@
 /** @typedef {import('discord.js').Message} Message */
+
+import { getTextChannel } from './util/discord.js';
+
 /** 
  * Command object.
  * @typedef Command
@@ -11,9 +14,10 @@
 */
 export default class Facade {
 
-    constructor(config, logger) {
+    constructor(config, logger, client) {
         this.config = config;
         this.logger = logger;
+        this.client = client;
         /**
          * @type Array<Command>
          * */
@@ -56,15 +60,17 @@ export default class Facade {
     /**
      * Send a message.
      *
-     * @param {Discord.TextChannel} channel Where to send.
+     * @param {Discord.TextChannel|string} channel Where to send, either the TextChannel or a channel ID as a string.
      * @param {string|Discord.MessagePayload|Discord.MessageOptions} content What to send.
      * @returns {Promise<Message|Message[]>}
      */
-    send(channel, content) {
-        const p = channel.send(content);
-        p.then(sent => this.logger.debug({ sent }, 'Sent message'))
-            .catch(err => this.logger.error({ err }, 'Send message failed'));
-        return p;
+    async send(channel, content) {
+        return getTextChannel(this.client, channel, this.config.allowThreads, this.config.allowDms)
+            .then(ch => ch.send(content))
+            .then(sent => {
+                this.logger.debug({ sent }, 'Sent message');
+                return sent;
+            });
     }
 
     /**
@@ -74,11 +80,31 @@ export default class Facade {
      * @param {string|Discord.MessagePayload|Discord.MessageOptions} content What to reply with.
      * @returns {Promise<Message|Message[]>}
      */
-    reply(message, content) {
+    async reply(message, content) {
         let payload = (typeof content === 'string') ? { content } : content;
-        const p = message.channel.send({ ...payload, reply: { messageReference: message } });
-        p.then(sent => this.logger.debug({ sent }, 'Sent reply'))
-            .catch(err => this.logger.error({ err }, 'Send reply failed'));
-        return p;
+        return message.channel.send({ ...payload, reply: { messageReference: message } })
+            .then(sent => this.logger.debug({ sent }, 'Sent reply'));
+    }
+
+    /**
+     * Send a log message to discord as a chat message to the configured log channel.
+     * 
+     * @param {Discord.client} client 
+     * @param {any} message Message content to send.
+     */
+    log(client, message, alsoLogInfo = true) {
+        // TODO requires test coverage
+        if (this.config.logChannel) {
+            if (alsoLogInfo) {
+                this.logger.info(message);
+            }
+            client.channels.fetch(this.config.logChannel).then(ch => {
+                if (ch.isText() || ch.isThread()) {
+                    ch.send(message);
+                } else {
+                    this.logger.error("Tried to log to non-text/thread channel", { message });
+                }
+            });
+        }
     }
 }
