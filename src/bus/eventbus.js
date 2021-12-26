@@ -1,3 +1,4 @@
+// TODO: Does Node support someting that could be used instead here? Like the discord  API itself uses, EventSource or something?
 export default class EventBus {
   constructor(logger) {
     this.logger = logger;
@@ -27,7 +28,9 @@ export default class EventBus {
     if (!type) { return; }
     if (!this.active) { return; }
     this.logger.trace({ event, type }, 'notify');
-    return Promise.all(this.listeners.filter(it => it.accept(type)).map(async it => it.notify(event, this)));
+    return Promise.all(this.listeners
+      .filter(it => it.accept(type))
+      .map(async it => it.notify(event, this)));
   }
 
   /**

@@ -4,15 +4,16 @@
 /**
  * Check if a channel is suitable for command handling.
  * 
- * @param {Channel} channel 
- * @param {object} config 
- * @returns boolean
+ * @param {Channel} channel The channel to check. 
+ * @param {object} config Influences what is allowed.
+ * @returns boolean Whether commands may be processed in this channel.
  */
 const isValidChannel = (channel, config) => {
-    return channel.isText()
-        && (channel.isThread() ? config.allowThreads : true)
-        && (channel.type === 'DM' ? config.allowDms : true)
-        && (config.channelPattern.test(channel.name) ? true : channel.type !== 'GUILD_TEXT');
+    return channel.isText() && (
+        channel.type === 'GUILD_TEXT'
+        || (channel.isThread() && config.allowThreads)
+        || (channel.type === 'DM' && config.allowDms)
+    );
 };
 
 /**

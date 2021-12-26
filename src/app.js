@@ -1,71 +1,45 @@
-import Discord from 'discord.js';
 import pino from 'pino';
-
+import EventBus from './bus/eventbus.js';
 import config from './config.js';
-import Facade from './facade.js';
-import commandGroups from './commands/index.js';
-import messageHandler from './messages.js';
-import ServiceAPI from './service.js';
+import discord from './discord.js';
+import facade from './facade.js';
+
 
 // Root logger
 const logger = pino({ level: config.logLevel });
 
-const intents = new Discord.Intents();
-const partials = [];
-intents.add(Discord.Intents.FLAGS.GUILDS);
-intents.add(Discord.Intents.FLAGS.GUILD_MESSAGES);
-if (config.allowDms) {
-    intents.add(Discord.Intents.FLAGS.DIRECT_MESSAGES);
-    partials.push("CHANNEL");
-}
-logger.debug({ intents: intents.toArray(), partials }, "Intents and partials");
-const client = new Discord.Client({ intents, partials });
-
-const commandLogger = logger.child({ name: 'command' });
-const facade = new Facade(config, commandLogger, client);
-const messages = messageHandler(facade);
-
-for (let group in commandGroups) {
-    commandGroups[group](facade, commandLogger.child({ group }));
-}
-
-client.once('invalidated', () => {
-    logger.info('Client invalidated, shutting down');
-    process.exit(2);
+const eventBus = new EventBus(logger.child({ name: 'eventbus' }));
+// This is the main event everyone else should listen to, if they want to know when the app is closing down.
+eventBus.addListener({
+  accept: type => type === 'shutdown',
+  notify: (evt, eventBus) => eventBus.shutdown(),
 });
-client.on('rateLimit', limits => logger.info({ limits }, 'Rate limited'));
-client.on('error', err => {
-    logger.error({ err }, 'Client error');
-    facade.log(client, 'Client error: ' + err, false);
-});
-client.on('warn', warning => {
-    logger.warn({ warning }, 'Client warning');
-    //facade.log(client, 'Client warning: ' + warning, false);
-});
-client.on('messageCreate', messages.onMessage);
 
-const api = new ServiceAPI(client, logger);
+discord(config, eventBus, logger.child({ name: 'discord' }));
+facade(config, eventBus, logger.child({ name: 'command' })); // TODO rename, facade is a bit meaningless with eventbus refactoring... it's the bot core logic itself basically
 
-client.login(config.clientToken)
-    .then(() => facade.log(client, 'Client logged in'))
-    .then(() => api.up().catch(error => {
-        logger.error(error, 'API initialisation failed');
-        process.exit(4);
-    }))
-    .catch(error => {
-        logger.error(error, 'Client initialisation failed');
-        process.exit(2);
-    });
+// const facade = new Facade(config, commandLogger, client);
+// const messages = messageHandler(facade);
+
+// for (let group in commandGroups) {
+    // commandGroups[group](facade, commandLogger.child({ group }));
+// }
+
+//const api = new ServiceAPI(client, logger);
 
 process.on('uncaughtException', function (err) {
-    logger.error({ err }, "Uncaught exception");
-    process.exit(3);
+  logger.error({ err }, "Uncaught error");
+  try {
+    eventBus.notify('shutdown', {});
+    process.exit(3); // Exit code 3: Unhandled error
+  } catch (err) {
+    logger.error({ err }, "Error in shutdown");
+    process.exit(4); // Exit code 4: Unhandled error with a further error during attempted clean shutdown.
+  }  
 });
 
 process.once('SIGINT', () => {
-    logger.info("SIGINT - closing down");
-    api.down()
-        .then(() => client.destroy())
-        .then(() => process.exit(0))
-        .catch(() => process.exit(1));
+  logger.info("SIGINT - closing down");
+  eventBus.notify('shutdown', {});
+  process.exit(0); // Exit code 0: Interrupted, probably a clean shutdown.
 });
