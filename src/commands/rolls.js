@@ -2,10 +2,9 @@
  * @file Provides a dice roll commands to roll dice.
  */
 /** @typedef {import('../facade').default} Facade */
-/** @typedef {import('discord.js').Message } Message */
+import Events from '../events.js';
+import { contextId } from '../util/discord.js';
 import rolls from '../util/rolls.js';
-
-import { memberOrAuthorKey } from '../util/discord.js';
 
 /**
  * Somewhere to store who-last-rolled-what.
@@ -15,17 +14,24 @@ import { memberOrAuthorKey } from '../util/discord.js';
 const lastRoll = {};
 
 const separateRollArgs = args => {
-    // Separate off a possible 'comment' at the end.
-    const pos = args.indexOf('#');
-    let expr, suffix;
+  // Separate off a possible 'comment' at the end.
+  let expr, suffix;
+  if (args == null) {
+    expr = '';
+    suffix = '';
+  } else {
+    const argStr = args.join(' ');
+    const pos = argStr.indexOf('#');
+
     if (pos > -1) {
-        expr = args.substr(0, pos).trim();
-        suffix = args.substr(pos + 1).trim();
+      expr = argStr.substr(0, pos).trim();
+      suffix = argStr.substr(pos + 1).trim();
     } else {
-        expr = args;
-        suffix = '';
+      expr = argStr;
+      suffix = '';
     }
-    return { expr, suffix };
+  }
+  return { expr, suffix };
 };
 
 /**
@@ -35,67 +41,81 @@ const separateRollArgs = args => {
  * @param {Logger} logger Logger for this set of commands.
  */
 export default (facade, logger) => {
-    const prefix = facade.config.commandPrefix;
+  const prefix = facade.config.commandPrefix;
 
-    /**
-     * Does a roll, including producing a user-facing error message due to e.g. bad expressions.
-     * 
-     * @param {string} expr Dice expression
-     * @param {string} memberOrAuthor Originating member or author identifier.
-     */
-    const doRoll = (expr, memberOrAuthor) => {
-        let result;
-        try {
-            result = rolls.roll(expr);
-        } catch (err) { // RollError
-            if (err.quiet) {
-                logger.info({ args: expr, memberOrAuthor }, err.message);
-            } else {
-                logger.error({ args: expr, memberOrAuthor, err }, err.message);
-            }
-            result = err.userMessage;
+  /**
+   * Does a roll, including producing a user-facing error message due to e.g. bad expressions.
+   * 
+   * @param {string} expr Dice expression
+   * @param {string} contexId Originating member or author identifier.
+   */
+  const doRoll = (expr, contexId) => {
+    let result;
+    try {
+      result = rolls.roll(expr);
+    } catch (err) { // RollError
+      if (err.quiet) {
+        logger.info({ expr, contexId }, err.message);
+      } else {
+        logger.error({ expr, contexId, err }, err.message);
+      }
+      result = err.userMessage;
+    }
+    return result;
+  };
+
+
+  /**
+   * Common parts of doing a roll e.g. handling user suffix.
+   * 
+   * @param {string} expr Roll expression
+   * @param {string} suffix Message suffix
+   * @param {string} contextId Context of the roll (who, where).
+   */
+  const rollCommon = (expr, suffix, contextId) => {
+    const result = doRoll(expr, contextId);
+    return suffix.length === 0 ? result : `${result} (${suffix})`;
+  };
+
+  facade.addCommand({
+    icon: ':game_die:',
+    name: 'Roll',
+    description: 'Roll dice with expressions made of dice and fixed values, e.g.'
+      + `\`${prefix}roll 4d6+2\` and optionally including a message on the end with \`# attack the skeleton\``,
+    accept: cmd => cmd === 'roll',
+    handle: async (args, context, eventBus) => {
+      logger.debug({ args }, "Roll");
+      const cId = contextId(context);
+      const { expr, suffix } = separateRollArgs(args);
+      const result = rollCommon(expr, suffix, cId);
+      lastRoll[cId] = args;
+      eventBus.notify(Events.COMMAND_RESULT, { context, content: result });
+    }
+  });
+
+  facade.addCommand({
+    icon: ':arrows_counterclockwise:',
+    name: 'Reroll',
+    description: `\`${prefix}${prefix}\` Repeat your last ${prefix}roll. Maybe the next one will be better...`,
+    accept: cmd => cmd === prefix, // i.e. react to !! if prefix is !
+    handle: async (newArgs, context, eventBus) => {
+      logger.debug({ args: newArgs }, "Reroll");
+      const cId = contextId(context);
+      const oldArgs = lastRoll[cId];
+      let result;
+      if (oldArgs == null) {
+        result = 'try rolling something first';
+      } else {
+        // Priority to suffix on this command, fall back to previous.
+        const { suffix: newSuffix } = separateRollArgs(newArgs);
+        const { expr, suffix: oldSuffix } = separateRollArgs(oldArgs);
+        const suffix = newSuffix.length === 0 ? oldSuffix : newSuffix;
+        if (suffix !== oldSuffix) {
+          lastRoll[cId] = [expr, '#', suffix];
         }
-        return result;
-    };
-
-    /**
-     * Common parts of doing a roll e.g. handling user suffix.
-     * 
-     * @param {string} args Roll command args i.e. what to roll, any suffixes.
-     * @param {string} message Resulting message from performing the roll.
-     */
-    const rollCommon = (args, message) => {
-        let { expr, suffix } = separateRollArgs(args);
-        const result = doRoll(expr, memberOrAuthorKey(message));
-        return suffix ? `${result} (${suffix})` : result;
-    };
-
-    facade.addCommand({
-        icon: ':game_die:',
-        name: 'Roll',
-        description: 'Roll dice with expressions made of dice and fixed values, e.g.'
-            + `\`${prefix}roll 4d6+2\` and optionally including a message on the end with \`# attack the skeleton\``,
-        accept: (cmd) => cmd === 'roll',
-        handle: async (message, args) => {
-            logger.debug({ args }, "Roll");
-            const result = rollCommon(args, message);
-            return facade.reply(message, result)
-                .then(ret => {
-                    lastRoll[memberOrAuthorKey(message)] = args;
-                    return ret;
-                });
-        }
-    });
-
-    facade.addCommand({
-        icon: ':arrows_counterclockwise:',
-        name: 'Reroll',
-        description: `\`${prefix}${prefix}\` Repeat your last ${prefix}roll. Maybe the next one will be better...`,
-        accept: (cmd) => cmd === prefix, // i.e. react to !! if prefix is !
-        handle: async (message, args) => {
-            logger.debug({ args }, "Reroll");
-            const last = lastRoll[memberOrAuthorKey(message)];
-            return facade.reply(message, last != null ? rollCommon(last, message) : 'try rolling something first');
-        }
-    });
+        result = rollCommon(expr, suffix, cId);
+      }
+      eventBus.notify(Events.COMMAND_RESULT, { context, content: result });
+    }
+  });
 };
