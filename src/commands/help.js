@@ -42,7 +42,7 @@ export default (facade, logger) => {
           footer: 'Made for you with <3',
         };
         lastHelpTime[mid] = context.timestamp;
-        eventBus.notify(Events.COMMAND_RESULT, { message: { embeds: [embed] }, context });
+        eventBus.notify(Events.COMMAND_RESULT, { content: { embeds: [embed] }, context });
       }
     }
   });
