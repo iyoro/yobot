@@ -10,14 +10,14 @@
  * @param {Logger} logger Logger for this set of commands.
  */
 export default (facade, logger) => {
-    facade.addCommand({
-        icon: ':question:',
-        name: 'Default',
-        description: 'It is a mystery',
-        accept: () => true,
-        hidden: true,
-        handle: async (message, args, cmd) => {
-            logger.debug({ cmd, args, text: message.content }, "Unhandled command");
-        }
-    });
+  facade.addCommand({
+    icon: ':question:',
+    name: 'Default',
+    description: 'It is a mystery',
+    accept: () => true,
+    hidden: true,
+    handle: async (message, args, cmd) => {
+      logger.info({ cmd, args, text: message.content }, "Unhandled command");
+    }
+  });
 };
