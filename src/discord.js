@@ -99,7 +99,7 @@ const MessageListener = (config, logger) => ({
 const CommandResponder = (client, config, logger) => ({
   accept: type => type == Events.COMMAND_RESULT,
   notify: async event => {
-    const { context, message } = event;
+    const { context, content } = event;
     if (!context) {
       logger.error(event, "Event with no context");
       return;
@@ -114,11 +114,15 @@ const CommandResponder = (client, config, logger) => ({
     const reply = context.message == null ? null : { messageReference: context.message };
 
     // Message itself can be a str or a object that is magically already compatible with MessagePayload.
-    const payload = (typeof event.message === 'string') ? { message } : message;
+    const payload = (typeof content === 'string') ? { content } : content;
+    if (payload == null || (typeof payload === 'object' && Object.keys(payload).length === 0)) {
+      logger.error({ context }, "Event would have resulted in an empty message; not sending");
+      return;
+    }
 
     client.channels.fetch(context.channel).then(channel => {
       if (channel.isText()) {
-        channel.send({ ...payload, reply });
+        channel.send({ reply, ...payload });
       } else {
         logger.error({ event, channel }, "Cannot respond to a non-text channel");
         return;
