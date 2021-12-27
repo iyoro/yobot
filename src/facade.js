@@ -1,5 +1,6 @@
 /** @file Responds to events coming from Discord and executes bot commands. */
 /** @typedef {import('discord.js').Message} Message */
+/** @typedef {import('./bus/eventbus.js').EventBus} EventBus */
 
 import commandGroups from './commands/index.js';
 import Events from './events.js';
@@ -16,7 +17,7 @@ export default (config, eventBus, logger) => {
  * @typedef Command
  * @property {function(string):boolean} accept Acceptance function. It is given the command name, lowercased, to test
  * if the command's handler can process it.
- * @property {function(Message, string, string):Promise<Message|Message[]>} handle Message handling function
+ * @property {function(Array<string>, object, EventBus, string):void} handle Message handling function
  * @property {string} name Command name for humans/help.
  * @property {string} description Command description/usage info
  * @property {boolean} hidden Whether the command is visible externally
@@ -41,10 +42,7 @@ class Facade { // TODO rename
   }
 
   notify(evt) {
-    this.onCommand(evt);
-  }
-
-  onCommand({ command, args, context }) {
+    const { command, args, context } = evt;
     this.exec(command, args, context);
   }
 
@@ -75,7 +73,7 @@ class Facade { // TODO rename
    * @param {Array<string>} args Other string tokens from the message.
    * @param {string} context An opaque context for where the command came from.   
    */
-  exec(command, args, context) {
+  async exec(command, args, context) {
     // N.b. param order when invoking the handler is args, helpers, then the command, since commands mostly already know what they are and can omit the last param.
     this.getCommands(true).find(it => it.accept(command)).handle(args, context, this.eventBus, command);
   }
