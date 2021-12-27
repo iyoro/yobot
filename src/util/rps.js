@@ -21,12 +21,6 @@ const RPS_FORMATS = {
     },
 };
 
-const ROLL = parse('d3');
-const play = theme => {
-    const result = ROLL();
-    if (theme in RPS_FORMATS && result in RPS_FORMATS[theme]) {
-        return `${RPS_PREFIX[theme]} ➔ ${RPS_FORMATS[theme][result]}`;
-    }
-    throw new Error("Mysterious combination of command and result for Rock, Paper, Scissors", theme, result);
-};
+const d3 = parse('d3');
+const play = theme => `${RPS_PREFIX[theme]} ➔ ${RPS_FORMATS[theme][d3()]}`;
 export default { play };
