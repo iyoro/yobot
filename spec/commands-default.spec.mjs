@@ -1,15 +1,15 @@
-import Facade from '../src/facade.js';
-import def from '../src/commands/default.js';
 import pino from 'pino';
+import EventBus from '../src/bus/eventbus.js';
+import def from '../src/commands/default.js';
+import { Facade } from '../src/facade.js';
 
 const logger = pino({ level: 'error' });
-let facade, command;
+let facade, command, eventBus;
 beforeEach(() => {
-    facade = new Facade({ commandPrefix: '!' }, null);
+    eventBus = new EventBus(logger);
+    facade = new Facade(eventBus, logger);
     spyOn(facade, 'addCommand').and.callFake(cmd => command = cmd);
-    spyOn(facade, 'send').and.stub();
-    spyOn(facade, 'reply').and.stub();
-    spyOn(facade, 'exec').and.stub();
+    spyOn(eventBus, 'notify').and.stub;
 });
 
 describe('Default command provider', () => {
@@ -23,12 +23,8 @@ describe('Default command provider', () => {
         expect(command.accept('something')).toBe(true);
         expect(command.accept()).toBe(true);
         // Command doesn't do anything.
-        expect(facade.send).not.toHaveBeenCalled();
-        expect(facade.reply).not.toHaveBeenCalled();
-        expect(facade.exec).not.toHaveBeenCalled();
-        await command.handle({ content: '!something' }, [], 'something');
-        expect(facade.send).not.toHaveBeenCalled();
-        expect(facade.reply).not.toHaveBeenCalled();
-        expect(facade.exec).not.toHaveBeenCalled();
+        expect(eventBus.notify).not.toHaveBeenCalled();
+        await command.handle([], {}, eventBus, 'something');
+        expect(eventBus.notify).not.toHaveBeenCalled();
     });
 });
