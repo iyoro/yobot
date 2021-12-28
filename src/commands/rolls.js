@@ -84,8 +84,8 @@ export default (facade, logger, config) => {
       + `\`${prefix}roll 4d6+2\` and optionally including a message on the end with \`# attack the skeleton\``,
     accept: cmd => cmd === 'roll',
     handle: async (args, context, eventBus) => {
-      logger.debug({ args }, "Roll");
       const cId = contextId(context);
+      logger.debug({ args, cId }, "Roll");
       const { expr, suffix } = separateRollArgs(args);
       const result = rollCommon(expr, suffix, cId);
       lastRoll[cId] = args;
@@ -99,8 +99,8 @@ export default (facade, logger, config) => {
     description: `\`${prefix}${prefix}\` Repeat your last ${prefix}roll. Maybe the next one will be better...`,
     accept: cmd => cmd === prefix, // i.e. react to !! if prefix is !
     handle: async (newArgs, context, eventBus) => {
-      logger.debug({ args: newArgs }, "Reroll");
       const cId = contextId(context);
+      logger.debug({ args: newArgs, cId }, "Reroll");
       const oldArgs = lastRoll[cId];
       let result;
       if (oldArgs == null) {
