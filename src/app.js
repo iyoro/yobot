@@ -1,12 +1,12 @@
 import pino from 'pino';
 import EventBus from './bus/eventbus.js';
+import commandGroups from './commands/index.js';
 import config from './config.js';
 import discord from './discord.js';
 import facade from './facade.js';
 
-
-// Root logger
 const logger = pino({ level: config.logLevel });
+const commandLogger = logger.child({ name: 'command' });
 
 const eventBus = new EventBus(logger.child({ name: 'eventbus' }));
 // This is the main event everyone else should listen to, if they want to know when the app is closing down.
@@ -16,7 +16,7 @@ eventBus.addListener({
 });
 
 discord(config, eventBus, logger.child({ name: 'discord' }));
-facade(config, eventBus, logger.child({ name: 'command' })); // TODO rename, facade is a bit meaningless with eventbus refactoring... it's the bot core logic itself basically
+facade(eventBus, commandLogger, config, commandGroups); // TODO rename, facade is a bit meaningless with eventbus refactoring... it's the bot core logic itself basically
 
 // const facade = new Facade(config, commandLogger, client);
 // const messages = messageHandler(facade);
