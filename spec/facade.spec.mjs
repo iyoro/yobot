@@ -2,23 +2,25 @@
  * @file Unit spec for the bot command facade.
  */
 import pino from 'pino';
-import Facade from '../src/facade.js';
+import EventBus from '../src/bus/eventbus.js';
+import Events from '../src/bus/events.js';
+import { Facade } from '../src/facade.js';
 
-const config = {}; // Not actually used atm.
 const logger = pino({ level: 'error' });
 const stubCommand = {
     description: '',
-    accept: function (cmd) { return cmd == this.name; },
-    handle: () => new Promise(() => '')
+    accept: () => true,
+    handle: async () => new Promise(() => '')
 };
 const mkcommand = (name) => Object.assign({ name }, stubCommand);
 
-/** @type Facade */
-let client;
+let eventBus;
 let facade;
+let context;
 beforeEach(function () {
-    client = {};
-    facade = new Facade(config, logger, client);
+    eventBus = new EventBus(logger);
+    facade = new Facade(eventBus, logger);
+    context = { 'source': 'test' };
 });
 
 describe('Facade', () => {
@@ -48,94 +50,40 @@ describe('Facade', () => {
     });
 
     it('executes a command if accepted by a handler', () => {
-        const message = {}; // This would be a Discord.js Message, but newing off a stub of those isn't trivial.
-        // Add a fallback command which accepts.
+        // Add a fallback command which accepts anything.
         const fallback = mkcommand('fb');
         const fbAccept = spyOn(fallback, 'accept').withArgs('something').and.returnValue(true);
-        const fbHandle = spyOn(fallback, 'handle').withArgs(message, ['arg1', 'arg2'], 'something').and.resolveTo('');
-        // A command which doesn't accept.
+        const fbHandle = spyOn(fallback, 'handle').withArgs(['arg1', 'arg2'], context, eventBus, 'something').and.resolveTo('');
+        // A command which doesn't accept anything.
         const command = mkcommand('cmd');
         const cmdAccept = spyOn(command, 'accept').withArgs('something').and.returnValue(false);
-        const cmdHandle = spyOn(command, 'handle').withArgs(message, ['arg1', 'arg2'], 'something').and.resolveTo('');
+        const cmdHandle = spyOn(command, 'handle').withArgs(['arg1', 'arg2'], context, eventBus, 'something').and.resolveTo('');
         facade.addCommand(command);
         facade.addCommand(fallback);
         // N.b. call param order is cmd, args but for handle it should be args, cmd because cms are less likely to 
         // care about exactly what string triggered them.
-        facade.exec(message, 'something', ['arg1', 'arg2']);
+        facade.exec('something', ['arg1', 'arg2'], context);
         expect(cmdAccept).toHaveBeenCalledTimes(1);
         expect(cmdHandle).toHaveBeenCalledTimes(0);
         expect(fbAccept).toHaveBeenCalledTimes(1);
         expect(fbHandle).toHaveBeenCalledTimes(1);
     });
 
-    it('can send a message to a channel provided directly', (done) => {
-        const channel = { send() { /*stub*/ } };
-        const send = spyOn(channel, 'send').withArgs('some text').and.resolveTo({});
-        facade.send(channel, 'some text').then(() => {
-            expect(send).toHaveBeenCalledTimes(1);
-            done();
-        });
-    });
-
-    it('can send a message to a channel provided as a snowflake', (done) => {
-        const channel = {
-            send() { },
-            isText() { return true; },
-            isThread() { return false; },
+    it('responds to command events', async () => {
+        const cmd = mkcommand('test');
+        spyOn(cmd, 'accept').and.callThrough();
+        spyOn(cmd, 'handle');
+        const cmdEvent = {
+            command: 'something',
+            args: ['foo', 'bar', 'baz'],
+            context: { test: 'yes' }
         };
-        client.channels = { fetch() { } };
-        const getCh = spyOn(client.channels, 'fetch').withArgs('9').and.resolveTo(channel);
-        const send = spyOn(channel, 'send').withArgs('some text').and.resolveTo({});
-        facade.send('9', 'some text').then(() => {
-            expect(getCh).toHaveBeenCalledTimes(1);
-            expect(send).toHaveBeenCalledTimes(1);
-            done();
-        });
+        facade.addCommand(cmd);
+        expect(facade.accept(Events.COMMAND)).toBeTrue();
+        expect(facade.accept('anything else')).toBeFalse();
+        // The bus should not notify it with something it does not accept, so do not test that.
+        await facade.notify(cmdEvent);
+        expect(cmd.accept).toHaveBeenCalledOnceWith('something');
+        expect(cmd.handle).toHaveBeenCalledOnceWith(['foo', 'bar', 'baz'], jasmine.objectContaining({ test: 'yes' }), eventBus, 'something');
     });
-
-    it('can send to a thread channel provided as a snowflake', (done) => {
-        const channel = {
-            send() { },
-            isText() { return true; },
-            isThread() { return true; },
-        };
-        client.channels = { fetch() { } };
-        const getCh = spyOn(client.channels, 'fetch').withArgs('9').and.resolveTo(channel);
-        const send = spyOn(channel, 'send').withArgs('some text').and.resolveTo({});
-        facade.send('9', 'some text').then(() => {
-            expect(getCh).toHaveBeenCalledTimes(1);
-            expect(send).toHaveBeenCalledTimes(1);
-            done();
-        });
-    });
-
-    it('can correctly fail to send to a non-text or thread channel provided as a snowflake', (done) => {
-        const channel = {
-            send() { },
-            isText() { return false; },
-            isThread() { return false; },
-        };
-        client.channels = { fetch() { } };
-        const getCh = spyOn(client.channels, 'fetch').withArgs('9').and.resolveTo(channel);
-        const send = spyOn(channel, 'send').withArgs('some text').and.resolveTo({});
-        facade.send('9', 'some text').then(() => {
-            fail();
-            done();
-        }).catch(e => {
-            expect(getCh).toHaveBeenCalledTimes(1);
-            expect(send).not.toHaveBeenCalled();
-            expect(e.message).toBe("9 is not a text channel");
-            done();
-        });
-    });
-
-    it('can send a reply to a message', () => {
-        const channel = { send() {/*stub*/ } };
-        const message = { channel };
-        // Reply must go back to the channel the message came from.
-        const send = spyOn(message.channel, 'send').withArgs({ content: 'some text', reply: { messageReference: message } }).and.resolveTo('');
-        facade.reply(message, 'some text');
-        expect(send).toHaveBeenCalledTimes(1);
-    });
-
 });
