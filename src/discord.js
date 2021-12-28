@@ -39,7 +39,7 @@ export const ErrorListener = logger => ({
   accept: type => type === Events.Discord.ERROR,
   notify: async ({ err }, eventBus) => {
     logger.error({ err }, 'Client error');
-    eventBus.notify(Events.ERROR, { msg: 'Client error', err });
+    eventBus.notify(Events.ERROR, { msg: `Client error: ${err}` });
   },
 });
 
@@ -47,7 +47,7 @@ export const WarningListener = logger => ({
   accept: type => type === Events.Discord.WARNING,
   notify: async ({ warning }, eventBus) => {
     logger.warn({ warning }, 'Client warning');
-    eventBus.notify(Events.INFO, { msg: 'Client warning: ' + warning });
+    eventBus.notify(Events.INFO, { msg: `Client warning: ${warning}` });
   }
 });
 
@@ -138,6 +138,33 @@ export const CommandResponder = (client, config, logger) => ({
   },
 });
 
+export const DiscordLogger = (messageType, client, config, logger) => ({
+  accept: type => type === messageType && [Events.INFO, Events.ERROR].includes(messageType),
+  notify: async event => {
+    const { msg } = event;
+    if (!msg) {
+      logger.error(event, "Log event with no message");
+      return;
+    }
+    if (!config.logChannel) {
+      logger.debug(event, "Ignore log event; no logChannel is configured");
+      return;
+    }
+    const icon = messageType === Events.ERROR ? ':red_square:' : ':blue_square:';
+
+    client.channels.fetch(config.logChannel).then(channel => {
+      if (channel.isText()) {
+        channel.send({ content: `${icon} ${msg}` });
+      } else {
+        logger.error({ event, channel }, "Cannot log to a non-text channel");
+        return;
+      }
+    }).catch(err => {
+      logger.error({ err, channel: config.logChannel }, "Could not fetch log channel");
+    });
+  },
+});
+
 /**
  * Module for interfacing with Discord.
  */
@@ -164,11 +191,13 @@ export default (config, eventBus, logger) => {
     accept: type => type === Events.SHUTDOWN,
     notify: () => client.destroy(),
   });
+  eventBus.addListener(DiscordLogger(Events.ERROR, client, config, glueLogger));
+  eventBus.addListener(DiscordLogger(Events.INFO, client, config, glueLogger));
 
   // Main message event processing entrypoint.
   const msgsLogger = logger.child({ name: 'events-messages' });
   eventBus.addListener(MessageListener(config, msgsLogger));
-  eventBus.addListener(CommandResponder(client, config, msgsLogger));
+  eventBus.addListener(CommandResponder(client, config, msgsLogger));  
 
   client
     .once('invalidated', () => eventBus.notify(Events.Discord.INVALIDATED, {}))

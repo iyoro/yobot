@@ -1,7 +1,7 @@
 import pino from 'pino';
 import EventBus from '../src/bus/eventbus.js';
 import Events from '../src/bus/events.js';
-import { CommandResponder, ErrorListener, InvalidatedListener, isValidChannel, LoginErrListener, LoginOkListener, MessageListener, RateLimitedListener, WarningListener } from '../src/discord.js';
+import { CommandResponder, DiscordLogger, ErrorListener, InvalidatedListener, isValidChannel, LoginErrListener, LoginOkListener, MessageListener, RateLimitedListener, WarningListener } from '../src/discord.js';
 
 const textChannel = {
   isText() { return true; },
@@ -339,6 +339,95 @@ describe('Event handler', () => {
       expect(channel.send).toHaveBeenCalledOnceWith(jasmine.objectContaining({
         content: 'test command result',
         reply: { messageReference: 'test-message-snowflake' },
+      }));
+    });
+  });
+
+  describe('DiscordLogger', () => {
+    let client;
+    beforeEach(() => {
+      config.logChannel = 'test-log-chan-snowflake';
+      client = {
+        channels: {
+          fetch: async () => ({}),
+        }
+      };
+    });
+
+    it('accepts log events only', () => {
+      let listener = DiscordLogger(Events.ERROR, client, config, logger);
+      expect(listener.accept(Events.ERROR)).toBeTrue();
+      expect(listener.accept(Events.INFO)).toBeFalse();
+      expect(listener.accept('something else')).toBeFalse();
+
+      listener = DiscordLogger(Events.INFO, client, config, logger);
+      expect(listener.accept(Events.INFO)).toBeTrue();
+      expect(listener.accept(Events.ERROR)).toBeFalse();
+      expect(listener.accept('something else')).toBeFalse();
+
+      listener = DiscordLogger('something else', client, config, logger);
+      expect(listener.accept(Events.INFO)).toBeFalse();
+      expect(listener.accept(Events.ERROR)).toBeFalse();
+      expect(listener.accept('something else')).toBeFalse();
+    });
+
+    it('ignores messages without a message', async () => {
+      spyOn(client.channels, 'fetch').and.stub;
+      const listener = DiscordLogger(Events.INFO, client, config, logger);
+      [
+        undefined,
+        null,
+        "",
+      ].forEach(async msg => {
+        await listener.notify({ msg }, eventBus);
+        expect(client.channels.fetch).not.toHaveBeenCalled();
+        expect(eventBus.notify).not.toHaveBeenCalled();
+      });
+    });
+
+    it('ignores messages if no channel is configured', async () => {
+      spyOn(client.channels, 'fetch').and.stub;
+      config.logChannel = undefined;
+      const listener = DiscordLogger(Events.INFO, client, config, logger);
+      await listener.notify({ msg: "test message" }, eventBus);
+      expect(client.channels.fetch).not.toHaveBeenCalled();
+      expect(eventBus.notify).not.toHaveBeenCalled();
+    });
+
+    it('will not send to non-text channels', async () => {
+      const listener = DiscordLogger(Events.INFO, client, config, logger);
+      const channel = { send: async () => undefined };
+      Object.assign(channel, otherKindOfChannel);
+      spyOn(client.channels, 'fetch').and.resolveTo(channel);
+      spyOn(channel, 'send').and.stub;
+      await listener.notify({ msg: 'test message' }, eventBus);
+      expect(client.channels.fetch).toHaveBeenCalledOnceWith('test-log-chan-snowflake');
+      expect(channel.send).not.toHaveBeenCalled();
+    });
+
+    it('will log an info message', async () => {
+      const listener = DiscordLogger(Events.INFO, client, config, logger);
+      const channel = { send: async () => undefined };
+      Object.assign(channel, textChannel);
+      spyOn(client.channels, 'fetch').and.resolveTo(channel);
+      spyOn(channel, 'send').and.stub;
+      await listener.notify({ msg: 'test message' }, eventBus);
+      expect(client.channels.fetch).toHaveBeenCalledOnceWith('test-log-chan-snowflake');
+      expect(channel.send).toHaveBeenCalledOnceWith(jasmine.objectContaining({
+        content: ':blue_square: test message',
+      }));
+    });
+
+    it('will log an error message', async () => {
+      const listener = DiscordLogger(Events.ERROR, client, config, logger);
+      const channel = { send: async () => undefined };
+      Object.assign(channel, textChannel);
+      spyOn(client.channels, 'fetch').and.resolveTo(channel);
+      spyOn(channel, 'send').and.stub;
+      await listener.notify({ msg: 'test message' }, eventBus);
+      expect(client.channels.fetch).toHaveBeenCalledOnceWith('test-log-chan-snowflake');
+      expect(channel.send).toHaveBeenCalledOnceWith(jasmine.objectContaining({
+        content: ':red_square: test message',
       }));
     });
   });
