@@ -2,7 +2,7 @@
  * @file Provides a dice roll commands to roll dice.
  */
 /** @typedef {import('../facade').default} Facade */
-import Events from '../events.js';
+import Events from '../bus/events.js';
 import { contextId } from '../util/discord.js';
 import rolls from '../util/rolls.js';
 
@@ -40,8 +40,8 @@ const separateRollArgs = args => {
  * @param {Facade} facade Bot command facade
  * @param {Logger} logger Logger for this set of commands.
  */
-export default (facade, logger) => {
-  const prefix = facade.config.commandPrefix;
+export default (facade, logger, config) => {
+  const prefix = config.commandPrefix;
 
   /**
    * Does a roll, including producing a user-facing error message due to e.g. bad expressions.

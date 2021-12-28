@@ -1,20 +1,27 @@
-import Facade from '../src/facade.js';
-import roll from '../src/commands/rolls.js';
-import rolls from '../src/util/rolls.js';
 import pino from 'pino';
+import EventBus from '../src/bus/eventbus.js';
+import Events from '../src/bus/events.js';
+import roll from '../src/commands/rolls.js';
+import { Facade } from '../src/facade.js';
+import rolls from '../src/util/rolls.js';
 
-let logger, facade, commands;
+let logger, facade, eventBus, context, config;
+let commands;
 beforeEach(() => {
+    config = { commandPrefix: '!' };
     logger = pino({ level: 'error' });
-    facade = new Facade({ commandPrefix: '!' }, null);
+    eventBus = new EventBus(logger);
+    facade = new Facade(eventBus, logger);
+    context = { source: 'test' };
     commands = [];
     spyOn(facade, 'addCommand').and.callFake(cmd => commands.push(cmd));
+    spyOn(eventBus, 'notify').and.stub;
 });
 
 describe('Roll command provider', () => {
     it('provides the roll command', () => {
         expect(facade.addCommand).not.toHaveBeenCalled();
-        roll(facade, logger);
+        roll(facade, logger, config);
         expect(facade.addCommand).toHaveBeenCalledTimes(2);
         expect(facade.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Roll' }));
         expect(facade.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Reroll' }));
@@ -24,7 +31,7 @@ describe('Roll command provider', () => {
 describe('Roll command', () => {
     it('accepts only the \'roll\' command', () => {
         expect(facade.addCommand).not.toHaveBeenCalled();
-        roll(facade, logger);
+        roll(facade, logger, config);
         const rollCmd = commands.find(it => it.name === 'Roll');
         expect(rollCmd).toBeDefined();
         expect(rollCmd.accept).toBeDefined();
@@ -34,46 +41,47 @@ describe('Roll command', () => {
     });
 
     it('allows a roll to be suffixed with a message', async () => {
-        spyOn(facade, 'reply').and.resolveTo('not used');
         spyOn(rolls, 'roll').and.returnValue('you rolled: 4');
 
-        roll(facade, logger);
+        roll(facade, logger, config);
         const rollCmd = commands.find(it => it.name === 'Roll');
         expect(rollCmd).toBeDefined();
         expect(rollCmd.handle).toBeDefined();
 
-        const message = { member: { id: 'member id' } };
-        await rollCmd.handle(message, '1d20 + 1 # attack the boss', 'roll');
+
+        await rollCmd.handle(['1d20', '+ 1', '#', 'attack', 'the', 'boss'], context, eventBus, 'roll');
+        expect(rolls.roll).toHaveBeenCalledTimes(1);
         expect(rolls.roll).toHaveBeenCalledOnceWith('1d20 + 1');
-        expect(facade.reply).toHaveBeenCalledOnceWith(message, 'you rolled: 4 (attack the boss)');
+        expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'you rolled: 4 (attack the boss)' }));
 
         rolls.roll.calls.reset();
-        facade.reply.calls.reset();
-        await rollCmd.handle(message, '1d20+1#attack the boss', 'roll');
+        eventBus.notify.calls.reset();
+
+        await rollCmd.handle(['1d20+1#attack', 'the', 'boss'], context, eventBus, 'roll');
         expect(rolls.roll).toHaveBeenCalledOnceWith('1d20+1');
-        expect(facade.reply).toHaveBeenCalledWith(message, 'you rolled: 4 (attack the boss)');
+        expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'you rolled: 4 (attack the boss)' }));
 
         rolls.roll.calls.reset();
-        facade.reply.calls.reset();
-        await rollCmd.handle(message, '#attack the boss', 'roll');
+        eventBus.notify.calls.reset();
+        await rollCmd.handle(['#attack', 'the', 'boss'], context, eventBus, 'roll');
         expect(rolls.roll).toHaveBeenCalledOnceWith('');
-        expect(facade.reply).toHaveBeenCalledWith(message, 'you rolled: 4 (attack the boss)');
+        expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'you rolled: 4 (attack the boss)' }));
     });
 });
 
 describe('Reroll command', () => {
     it('accepts only the command-prefix as its command', () => {
         expect(facade.addCommand).not.toHaveBeenCalled();
-        roll(facade, logger);
+        roll(facade, logger, config);
         let rerollCmd = commands.find(it => it.name === 'Reroll');
         expect(rerollCmd).toBeDefined();
         expect(rerollCmd.accept).toBeDefined();
         expect(rerollCmd.accept('something')).toBe(false);
         expect(rerollCmd.accept('%')).toBe(false);
         expect(rerollCmd.accept('!')).toBe(true);
-        facade.config.commandPrefix = '%';
+        config.commandPrefix = '%';
         commands = [];
-        roll(facade, logger);
+        roll(facade, logger, config);
         rerollCmd = commands.find(it => it.name === 'Reroll');
         expect(rerollCmd.accept('%')).toBe(true);
         expect(rerollCmd.accept('!')).toBe(false);
@@ -82,52 +90,50 @@ describe('Reroll command', () => {
 
 describe('Reroll memory', () => {
     it('saves the previous roll', async () => {
-        spyOn(facade, 'reply').and.resolveTo('not used');
         spyOn(rolls, 'roll').and.returnValue('roll result');
-        const message = { member: { id: 'member id' } };
-        roll(facade, logger);
+        roll(facade, logger, config);
 
         // When rolling a simple expression,
         const rollCmd = commands.find(it => it.name === 'Roll');
         const rerollCmd = commands.find(it => it.name === 'Reroll');
-        await rollCmd.handle(message, '4d8 - 2', 'roll').then(function () {
+        await rollCmd.handle(['4d8', '-', '2'], context, eventBus, 'roll').then(function () {
             // Then the roll will have been made.
             expect(rolls.roll).toHaveBeenCalledOnceWith('4d8 - 2');
-            expect(facade.reply).toHaveBeenCalledTimes(1);
+            expect(eventBus.notify).toHaveBeenCalledTimes(1);
         });
         // When rerolling,
         rolls.roll.calls.reset();
-        facade.reply.calls.reset();
-        await rerollCmd.handle(message, '', 'reroll').then(function () {
+        eventBus.notify.calls.reset();
+        await rerollCmd.handle([], context, eventBus, 'reroll').then(function () {
             // Then the same roll will have been made again.
             expect(rolls.roll).toHaveBeenCalledOnceWith('4d8 - 2');
-            expect(facade.reply).toHaveBeenCalledTimes(1);
+            expect(eventBus.notify).toHaveBeenCalledTimes(1);
         });
         // When rolling with a suffix message
         rolls.roll.calls.reset();
-        facade.reply.calls.reset();
-        await rollCmd.handle(message, '4d8 - 2 # attack the boss', 'roll').then(function () {
+        eventBus.notify.calls.reset();
+        await rollCmd.handle(['4d8', '-', '2', '#', 'attack', 'the', 'boss'], context, eventBus, 'roll').then(function () {
             expect(rolls.roll).toHaveBeenCalledOnceWith('4d8 - 2');
-            expect(facade.reply).toHaveBeenCalledOnceWith(message, 'roll result (attack the boss)');
+            expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'roll result (attack the boss)' }));
         });
         rolls.roll.calls.reset();
-        facade.reply.calls.reset();
-        await rerollCmd.handle(message, '', 'reroll').then(function () {
+        eventBus.notify.calls.reset();
+        await rerollCmd.handle([], context, eventBus, 'reroll').then(function () {
             expect(rolls.roll).toHaveBeenCalledOnceWith('4d8 - 2');
-            expect(facade.reply).toHaveBeenCalledOnceWith(message, 'roll result (attack the boss)');
+            expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'roll result (attack the boss)' }));
         });
         // When rolling with empty args
         rolls.roll.calls.reset();
-        facade.reply.calls.reset();
-        await rollCmd.handle(message, '', 'roll').then(function () {
+        eventBus.notify.calls.reset();
+        await rollCmd.handle([], context, eventBus, 'roll').then(function () {
             expect(rolls.roll).toHaveBeenCalledOnceWith('');
-            expect(facade.reply).toHaveBeenCalledOnceWith(message, 'roll result');
+            expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'roll result' }));
         });
         rolls.roll.calls.reset();
-        facade.reply.calls.reset();
-        await rerollCmd.handle(message, '', 'reroll').then(function () {
+        eventBus.notify.calls.reset();
+        await rerollCmd.handle([], context, eventBus, 'reroll').then(function () {
             expect(rolls.roll).toHaveBeenCalledOnceWith('');
-            expect(facade.reply).toHaveBeenCalledOnceWith(message, 'roll result');
+            expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'roll result' }));
         });
     });
 });
