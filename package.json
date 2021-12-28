@@ -1,6 +1,6 @@
 {
   "name": "yobot",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "A discord rollbot",
   "main": "src/app.js",
   "type": "module",
@@ -9,7 +9,8 @@
     "run": "node src/app.js",
     "test": "jasmine",
     "lint-fix": "eslint --fix src/",
-    "missing-tests": "egrep --color -ri -e 'test[[:space:]]*me' -e 'xxx' src/"
+    "missing-tests": "egrep --color -ri -e 'test[[:space:]]*me' -e 'xxx' src/",
+    "todos": "egrep --color -ri -e '\\btodo' -e 'xxx' src/"
   },
   "keywords": [
     "discord",
