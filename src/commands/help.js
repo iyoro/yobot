@@ -3,7 +3,7 @@
  */
 /** @typedef {import('../facade').default} Facade */
 
-import Events from '../events.js';
+import Events from '../bus/events.js';
 import { contextId } from '../util/discord.js';
 
 // Last time help was requested.
