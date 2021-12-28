@@ -107,10 +107,10 @@ export const CommandResponder = (client, config, logger) => ({
       logger.error(event, "Event with no context");
       return;
     }
-    // Determine who we are responding to. Don't check the context.source, this allows non-discord origins to send their command results to discord.
-    // But we do need to make sure we have a channel we are responding to, and optionally a user to ping.
-    if (context.channel == null || (context.author == null && context.member == null)) {
-      logger.error(event, "Event without a channel/user context");
+    // Determine where we are responding to. Don't check the context.source, this allows non-discord origins to send their command results to discord.
+    // But we do need to make sure we have a channel we are responding to.
+    if (context.channel == null) {
+      logger.error(event, "Event without a channel context");
       return;
     }
     // context.message can be a snowflake in order to reply to this message.
@@ -123,6 +123,8 @@ export const CommandResponder = (client, config, logger) => ({
       return;
     }
 
+    // Note that this does not check the config to see if it's allowed to use e.g. threads, DMs - that config only controls where it will process commands.
+    // Sending responses is assumed to only be triggered appropriately.
     client.channels.fetch(context.channel).then(channel => {
       if (channel.isText()) {
         channel.send({ reply, ...payload });
