@@ -2,7 +2,7 @@
  * @file Provides a dice roll commands to play rock, paper, scissors.
  */
 /** @typedef {import('../facade').default} Facade */
-import Events from '../events.js';
+import Events from '../bus/events.js';
 import rps from '../util/rps.js';
 
 const common = (theme, logger) => async (args, context, eventBus) => {

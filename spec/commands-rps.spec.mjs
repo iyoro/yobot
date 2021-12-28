@@ -1,14 +1,20 @@
-import Facade from '../src/facade.js';
-import util from '../src/util/rps.js';
-import rps from '../src/commands/rps.js';
 import pino from 'pino';
+import EventBus from '../src/bus/eventbus.js';
+import Events from '../src/bus/events.js';
+import rps from '../src/commands/rps.js';
+import { Facade } from '../src/facade.js';
+import util from '../src/util/rps.js';
 
-let logger, facade, commands;
+let logger, facade, eventBus, context;
+let commands;
 beforeEach(() => {
     logger = pino({ level: 'error' });
-    facade = new Facade({ commandPrefix: '!' }, null);
+    eventBus = new EventBus(logger);
+    facade = new Facade(eventBus, logger);
+    context = { source: 'test' };
     commands = [];
     spyOn(facade, 'addCommand').and.callFake(cmd => commands.push(cmd));
+    spyOn(eventBus, 'notify').and.stub;
 });
 
 describe('Rock, paper, scissors command provider', () => {
@@ -33,7 +39,6 @@ describe('Rock, paper, scissors command', () => {
     });
 
     it('generates suitable outputs for r-p-s', async () => {
-        spyOn(facade, 'reply').and.resolveTo('not used');
         spyOn(util, 'play').and.returnValue('rock');
 
         rps(facade, logger);
@@ -41,10 +46,9 @@ describe('Rock, paper, scissors command', () => {
         expect(rpsCmd).toBeDefined();
         expect(rpsCmd.handle).toBeDefined();
 
-        const message = { member: { id: 'member id' } };
-        await rpsCmd.handle(message, 'not used', 'not used');
+        await rpsCmd.handle([], context, eventBus, 'rps');
         expect(util.play).toHaveBeenCalledOnceWith('rps');
-        expect(facade.reply).toHaveBeenCalledOnceWith(message, 'rock');
+        expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'rock' }));
     });
 });
 
@@ -60,7 +64,6 @@ describe('Soulgem, parchment, clippers command', () => {
     });
 
     it('generates suitable outputs for s-p-s', async () => {
-        spyOn(facade, 'reply').and.resolveTo('not used');
         spyOn(util, 'play').and.returnValue('parchment');
 
         rps(facade, logger);
@@ -68,9 +71,8 @@ describe('Soulgem, parchment, clippers command', () => {
         expect(spcCmd).toBeDefined();
         expect(spcCmd.handle).toBeDefined();
 
-        const message = { member: { id: 'member id' } };
-        await spcCmd.handle(message, 'not used', 'not used');
+        await spcCmd.handle([], context, eventBus, 'spc');
         expect(util.play).toHaveBeenCalledOnceWith('spc');
-        expect(facade.reply).toHaveBeenCalledOnceWith(message, 'parchment');
+        expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'parchment' }));
     });
 });
