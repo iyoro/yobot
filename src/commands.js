@@ -4,9 +4,9 @@
 import Events from './bus/events.js';
 
 export default (eventBus, logger, config, commandGroups) => {
-  const facade = new Facade(eventBus, logger);
+  const commands = new Commands(eventBus, logger);
   for (let group in commandGroups) {
-    commandGroups[group](facade, logger.child({ group }), config);
+    commandGroups[group](commands, logger.child({ group }), config);
   }
 };
 
@@ -20,7 +20,7 @@ export default (eventBus, logger, config, commandGroups) => {
  * @property {string} description Command description/usage info
  * @property {boolean} hidden Whether the command is visible externally
 */
-export class Facade { // TODO rename
+export class Commands { // TODO rename
 
   constructor(eventBus, logger) {
     this.eventBus = eventBus;

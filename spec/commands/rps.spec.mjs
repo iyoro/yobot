@@ -1,37 +1,37 @@
 import pino from 'pino';
 import EventBus from '../../src/bus/eventbus.js';
 import Events from '../../src/bus/events.js';
+import { Commands } from '../../src/commands.js';
 import rps from '../../src/commands/rps.js';
-import { Facade } from '../../src/facade.js';
 import util from '../../src/util/rps.js';
 
-let logger, facade, eventBus, context;
-let commands;
+let logger, commands, eventBus, context;
+let commandsAdded;
 beforeEach(() => {
     logger = pino({ level: 'error' });
     eventBus = new EventBus(logger);
-    facade = new Facade(eventBus, logger);
+    commands = new Commands(eventBus, logger);
     context = { source: 'test' };
-    commands = [];
-    spyOn(facade, 'addCommand').and.callFake(cmd => commands.push(cmd));
+    commandsAdded = [];
+    spyOn(commands, 'addCommand').and.callFake(cmd => commandsAdded.push(cmd));
     spyOn(eventBus, 'notify').and.stub;
 });
 
 describe('Rock, paper, scissors command provider', () => {
     it('provides the roll command', () => {
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        rps(facade, logger);
-        expect(facade.addCommand).toHaveBeenCalledTimes(2);
-        expect(facade.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Rock, paper, scissors' }));
-        expect(facade.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Soulgem, parchment, clippers' }));
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        rps(commands, logger);
+        expect(commands.addCommand).toHaveBeenCalledTimes(2);
+        expect(commands.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Rock, paper, scissors' }));
+        expect(commands.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Soulgem, parchment, clippers' }));
     });
 });
 
 describe('Rock, paper, scissors command', () => {
     it('accepts the \'rps\' command', () => {
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        rps(facade, logger);
-        const rpsCmd = commands.find(it => it.name === 'Rock, paper, scissors');
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        rps(commands, logger);
+        const rpsCmd = commandsAdded.find(it => it.name === 'Rock, paper, scissors');
         expect(rpsCmd).toBeDefined();
         expect(rpsCmd.accept).toBeDefined();
         expect(rpsCmd.accept('rps')).toBe(true);
@@ -41,8 +41,8 @@ describe('Rock, paper, scissors command', () => {
     it('generates suitable outputs for r-p-s', async () => {
         spyOn(util, 'play').and.returnValue('rock');
 
-        rps(facade, logger);
-        const rpsCmd = commands.find(it => it.name === 'Rock, paper, scissors');
+        rps(commands, logger);
+        const rpsCmd = commandsAdded.find(it => it.name === 'Rock, paper, scissors');
         expect(rpsCmd).toBeDefined();
         expect(rpsCmd.handle).toBeDefined();
 
@@ -54,9 +54,9 @@ describe('Rock, paper, scissors command', () => {
 
 describe('Soulgem, parchment, clippers command', () => {
     it('accepts the \'spc\' command', () => {
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        rps(facade, logger);
-        const spcCmd = commands.find(it => it.name === 'Soulgem, parchment, clippers');
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        rps(commands, logger);
+        const spcCmd = commandsAdded.find(it => it.name === 'Soulgem, parchment, clippers');
         expect(spcCmd).toBeDefined();
         expect(spcCmd.accept).toBeDefined();
         expect(spcCmd.accept('spc')).toBe(true);
@@ -66,8 +66,8 @@ describe('Soulgem, parchment, clippers command', () => {
     it('generates suitable outputs for s-p-s', async () => {
         spyOn(util, 'play').and.returnValue('parchment');
 
-        rps(facade, logger);
-        const spcCmd = commands.find(it => it.name === 'Soulgem, parchment, clippers');
+        rps(commands, logger);
+        const spcCmd = commandsAdded.find(it => it.name === 'Soulgem, parchment, clippers');
         expect(spcCmd).toBeDefined();
         expect(spcCmd.handle).toBeDefined();
 

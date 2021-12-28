@@ -1,7 +1,7 @@
 /**
  * @file Provides a dice roll commands to play rock, paper, scissors.
  */
-/** @typedef {import('../facade').default} Facade */
+/** @typedef {import('../commands').Commands} Commands */
 import Events from '../bus/events.js';
 import rps from '../util/rps.js';
 
@@ -11,13 +11,13 @@ const common = (theme, logger) => async (args, context, eventBus) => {
 };
 
 /**
- * Adds commands to the bot facade.
+ * Adds commands to the bot commands registry.
  *
- * @param {Facade} facade Bot command facade
+ * @param {Commands} commands Bot command registry
  * @param {Logger} logger Logger for this set of commands.
  */
-export default (facade, logger) => {
-    facade.addCommand({
+export default (commands, logger) => {
+    commands.addCommand({
         icon: ':rock:',
         name: 'Rock, paper, scissors',
         description: '`!rps` Randomly picks one of three values from the well-known three-way tie-breaker game. '
@@ -26,7 +26,7 @@ export default (facade, logger) => {
         handle: common('rps', logger.child({ command: 'rps' })),
     });
 
-    facade.addCommand({
+    commands.addCommand({
         name: 'Soulgem, parchment, clippers',
         hidden: true,
         accept: cmd => cmd === 'spc',

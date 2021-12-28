@@ -1,38 +1,38 @@
 import pino from 'pino';
 import EventBus from '../../src/bus/eventbus.js';
 import Events from '../../src/bus/events.js';
+import { Commands } from '../../src/commands.js';
 import roll from '../../src/commands/rolls.js';
-import { Facade } from '../../src/facade.js';
 import rolls from '../../src/util/rolls.js';
 
-let logger, facade, eventBus, context, config;
-let commands;
+let logger, commands, eventBus, context, config;
+let commandsAdded;
 beforeEach(() => {
     config = { commandPrefix: '!' };
     logger = pino({ level: 'error' });
     eventBus = new EventBus(logger);
-    facade = new Facade(eventBus, logger);
+    commands = new Commands(eventBus, logger);
     context = { source: 'test' };
-    commands = [];
-    spyOn(facade, 'addCommand').and.callFake(cmd => commands.push(cmd));
+    commandsAdded = [];
+    spyOn(commands, 'addCommand').and.callFake(cmd => commandsAdded.push(cmd));
     spyOn(eventBus, 'notify').and.stub;
 });
 
 describe('Roll command provider', () => {
     it('provides the roll command', () => {
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        roll(facade, logger, config);
-        expect(facade.addCommand).toHaveBeenCalledTimes(2);
-        expect(facade.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Roll' }));
-        expect(facade.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Reroll' }));
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        roll(commands, logger, config);
+        expect(commands.addCommand).toHaveBeenCalledTimes(2);
+        expect(commands.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Roll' }));
+        expect(commands.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Reroll' }));
     });
 });
 
 describe('Roll command', () => {
     it('accepts only the \'roll\' command', () => {
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        roll(facade, logger, config);
-        const rollCmd = commands.find(it => it.name === 'Roll');
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        roll(commands, logger, config);
+        const rollCmd = commandsAdded.find(it => it.name === 'Roll');
         expect(rollCmd).toBeDefined();
         expect(rollCmd.accept).toBeDefined();
         expect(rollCmd.accept('something')).toBe(false);
@@ -43,8 +43,8 @@ describe('Roll command', () => {
     it('allows a roll to be suffixed with a message', async () => {
         spyOn(rolls, 'roll').and.returnValue('you rolled: 4');
 
-        roll(facade, logger, config);
-        const rollCmd = commands.find(it => it.name === 'Roll');
+        roll(commands, logger, config);
+        const rollCmd = commandsAdded.find(it => it.name === 'Roll');
         expect(rollCmd).toBeDefined();
         expect(rollCmd.handle).toBeDefined();
 
@@ -71,18 +71,18 @@ describe('Roll command', () => {
 
 describe('Reroll command', () => {
     it('accepts only the command-prefix as its command', () => {
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        roll(facade, logger, config);
-        let rerollCmd = commands.find(it => it.name === 'Reroll');
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        roll(commands, logger, config);
+        let rerollCmd = commandsAdded.find(it => it.name === 'Reroll');
         expect(rerollCmd).toBeDefined();
         expect(rerollCmd.accept).toBeDefined();
         expect(rerollCmd.accept('something')).toBe(false);
         expect(rerollCmd.accept('%')).toBe(false);
         expect(rerollCmd.accept('!')).toBe(true);
         config.commandPrefix = '%';
-        commands = [];
-        roll(facade, logger, config);
-        rerollCmd = commands.find(it => it.name === 'Reroll');
+        commandsAdded = [];
+        roll(commands, logger, config);
+        rerollCmd = commandsAdded.find(it => it.name === 'Reroll');
         expect(rerollCmd.accept('%')).toBe(true);
         expect(rerollCmd.accept('!')).toBe(false);
     });
@@ -91,11 +91,11 @@ describe('Reroll command', () => {
 describe('Reroll memory', () => {
     it('saves the previous roll', async () => {
         spyOn(rolls, 'roll').and.returnValue('roll result');
-        roll(facade, logger, config);
+        roll(commands, logger, config);
 
         // When rolling a simple expression,
-        const rollCmd = commands.find(it => it.name === 'Roll');
-        const rerollCmd = commands.find(it => it.name === 'Reroll');
+        const rollCmd = commandsAdded.find(it => it.name === 'Roll');
+        const rerollCmd = commandsAdded.find(it => it.name === 'Reroll');
         await rollCmd.handle(['4d8', '-', '2'], context, eventBus, 'roll').then(function () {
             // Then the roll will have been made.
             expect(rolls.roll).toHaveBeenCalledOnceWith('4d8 - 2');

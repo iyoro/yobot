@@ -1,17 +1,17 @@
 import pino from 'pino';
 import EventBus from '../../src/bus/eventbus.js';
 import events from '../../src/bus/events.js';
+import { Commands } from '../../src/commands.js';
 import help from '../../src/commands/help.js';
-import { Facade } from '../../src/facade.js';
 
 const logger = pino({ level: 'error' });
-let facade, eventBus, context;
+let commands, eventBus, context;
 let command, event, eventType;
 beforeEach(() => {
     context = { source: 'test' };
     eventBus = new EventBus(logger);
-    facade = new Facade(eventBus, logger);
-    spyOn(facade, 'addCommand').and.callFake(cmd => command = cmd);
+    commands = new Commands(eventBus, logger);
+    spyOn(commands, 'addCommand').and.callFake(cmd => command = cmd);
     spyOn(eventBus, 'notify').and.callFake((type, evt) => {
         eventType = type;
         event = evt;
@@ -24,16 +24,16 @@ beforeEach(() => {
 describe('Help command provider', () => {
     it('provides the help command', () => {
         expect(command).toBeUndefined();
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        help(facade, logger);
-        expect(facade.addCommand).toHaveBeenCalledTimes(1);
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        help(commands, logger);
+        expect(commands.addCommand).toHaveBeenCalledTimes(1);
         expect(command.name).toBe('Help');
         expect(command.accept('help')).toBe(true);
         expect(command.accept('somethingElse')).toBe(false);
     });
 
     it('fires a response when invoked', async () => {
-        help(facade, logger);
+        help(commands, logger);
         const startTime = new Date().getTime();
         context.timestamp = startTime;
         command.handle(['foo', 'bar', 'baz'], context, eventBus, 'Help');

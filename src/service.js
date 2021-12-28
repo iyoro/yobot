@@ -1,6 +1,6 @@
 import express from 'express';
-
 import config from './config.js';
+
 
 export default class ServiceAPI {
     constructor(client, logger) {
@@ -59,7 +59,7 @@ export default class ServiceAPI {
         const chanId = req.query.chan; // TODO this may not work for sending DMs?
         if (guildId && chanId) {
             // TODO: figure out how to synthesize a message. We could REALLY gnarlyly new off and populate a Message
-            // but it seems the better option is to separate the facade, etc. from Discord a bit so that we can call
+            // but it seems the better option is to separate the commands registry, etc. from Discord a bit so that we can call
             // the same func just not via the message handler. So, "run the command !roll d6 for <user> in <channel>"
             // so that we know what, who, where the output goes, but don't need to pass a full Message around. Need my
             // own 'Command' object?

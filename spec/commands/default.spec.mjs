@@ -1,23 +1,23 @@
 import pino from 'pino';
 import EventBus from '../../src/bus/eventbus.js';
+import { Commands } from '../../src/commands.js';
 import def from '../../src/commands/default.js';
-import { Facade } from '../../src/facade.js';
 
 const logger = pino({ level: 'error' });
-let facade, command, eventBus;
+let commands, command, eventBus;
 beforeEach(() => {
     eventBus = new EventBus(logger);
-    facade = new Facade(eventBus, logger);
-    spyOn(facade, 'addCommand').and.callFake(cmd => command = cmd);
+    commands = new Commands(eventBus, logger);
+    spyOn(commands, 'addCommand').and.callFake(cmd => command = cmd);
     spyOn(eventBus, 'notify').and.stub;
 });
 
 describe('Default command provider', () => {
     it('provides the default command', async () => {
         expect(command).toBeUndefined();
-        expect(facade.addCommand).toHaveBeenCalledTimes(0);
-        def(facade, logger);
-        expect(facade.addCommand).toHaveBeenCalledTimes(1);
+        expect(commands.addCommand).toHaveBeenCalledTimes(0);
+        def(commands, logger);
+        expect(commands.addCommand).toHaveBeenCalledTimes(1);
         expect(command.name).toBe('Default');
         // Command will accept any input.
         expect(command.accept('something')).toBe(true);

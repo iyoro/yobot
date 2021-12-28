@@ -78,8 +78,7 @@ describe('Event handler', () => {
   let logger, eventBus;
   beforeEach(() => {
     logger = pino({ level: 'error' });
-    eventBus = new EventBus(logger);
-    //facade = new Facade(eventBus, logger);        
+    eventBus = new EventBus(logger);  
     spyOn(eventBus, 'notify').and.resolveTo(undefined);
     spyOn(process, 'exit').and.stub; // Do not want listeners to be able to kill the process!
   });

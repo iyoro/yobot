@@ -1,7 +1,7 @@
 /**
  * @file Provides a dice roll commands to roll dice.
  */
-/** @typedef {import('../facade').default} Facade */
+/** @typedef {import('../commands').Commands} Commands */
 import Events from '../bus/events.js';
 import { contextId } from '../util/discord.js';
 import rolls from '../util/rolls.js';
@@ -35,12 +35,12 @@ const separateRollArgs = args => {
 };
 
 /**
- * Adds commands to the bot facade.
+ * Adds commands to the bot commands registry.
  *
- * @param {Facade} facade Bot command facade
+ * @param {Commands} commands Bot command registry
  * @param {Logger} logger Logger for this set of commands.
  */
-export default (facade, logger, config) => {
+export default (commands, logger, config) => {
   const prefix = config.commandPrefix;
 
   /**
@@ -77,7 +77,7 @@ export default (facade, logger, config) => {
     return suffix.length === 0 ? result : `${result} (${suffix})`;
   };
 
-  facade.addCommand({
+  commands.addCommand({
     icon: ':game_die:',
     name: 'Roll',
     description: 'Roll dice with expressions made of dice and fixed values, e.g.'
@@ -93,7 +93,7 @@ export default (facade, logger, config) => {
     }
   });
 
-  facade.addCommand({
+  commands.addCommand({
     icon: ':arrows_counterclockwise:',
     name: 'Reroll',
     description: `\`${prefix}${prefix}\` Repeat your last ${prefix}roll. Maybe the next one will be better...`,

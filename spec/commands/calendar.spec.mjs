@@ -1,35 +1,35 @@
 import pino from 'pino';
 import EventBus from '../../src/bus/eventbus.js';
 import Events from '../../src/bus/events.js';
+import { Commands } from '../../src/commands.js';
 import calendar from '../../src/commands/calendar.js';
-import { Facade } from '../../src/facade.js';
 import util from '../../src/util/calendar.js';
 
-let logger, facade, eventBus, context;
-let commands;
+let logger, commands, eventBus, context;
+let commandsAdded;
 beforeEach(() => {
     logger = pino({ level: 'error' });
     eventBus = new EventBus(logger);
-    facade = new Facade(eventBus, logger);
+    commands = new Commands(eventBus, logger);
     context = { source: 'test' };
-    commands = [];
-    spyOn(facade, 'addCommand').and.callFake(cmd => commands.push(cmd));
+    commandsAdded = [];
+    spyOn(commands, 'addCommand').and.callFake(cmd => commandsAdded.push(cmd));
     spyOn(eventBus, 'notify').and.stub;
 });
 
 describe('Calendar command provider', () => {
     it('provides the day command', () => {
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        calendar(facade, logger);
-        expect(facade.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Lore day' }));
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        calendar(commands, logger);
+        expect(commands.addCommand).toHaveBeenCalledWith(jasmine.objectContaining({ name: 'Lore day' }));
     });
 });
 
 describe('Lore day command', () => {
     it('accepts the \'day\' command', () => {
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        calendar(facade, logger);
-        const dayCmd = commands.find(it => it.name === 'Lore day');
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        calendar(commands, logger);
+        const dayCmd = commandsAdded.find(it => it.name === 'Lore day');
         expect(dayCmd).toBeDefined();
         expect(dayCmd.accept).toBeDefined();
         expect(dayCmd.accept('day')).toBe(true);
@@ -38,8 +38,8 @@ describe('Lore day command', () => {
     it('generates suitable outputs', async () => {
         spyOn(util, 'day').and.returnValue('Fredas');
 
-        calendar(facade, logger);
-        const dayCmd = commands.find(it => it.name === 'Lore day');
+        calendar(commands, logger);
+        const dayCmd = commandsAdded.find(it => it.name === 'Lore day');
         expect(dayCmd).toBeDefined();
         expect(dayCmd.handle).toBeDefined();
 
@@ -51,9 +51,9 @@ describe('Lore day command', () => {
 
 describe('Lore month command', () => {
     it('accepts the \'month\' command', () => {
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        calendar(facade, logger);
-        const monthCmd = commands.find(it => it.name === 'Lore month');
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        calendar(commands, logger);
+        const monthCmd = commandsAdded.find(it => it.name === 'Lore month');
         expect(monthCmd).toBeDefined();
         expect(monthCmd.accept).toBeDefined();
         expect(monthCmd.accept('month')).toBe(true);
@@ -62,8 +62,8 @@ describe('Lore month command', () => {
     it('generates suitable outputs', async () => {
         spyOn(util, 'month').and.returnValue('Frostfall');
 
-        calendar(facade, logger);
-        const monthCmd = commands.find(it => it.name === 'Lore month');
+        calendar(commands, logger);
+        const monthCmd = commandsAdded.find(it => it.name === 'Lore month');
         expect(monthCmd).toBeDefined();
         expect(monthCmd.handle).toBeDefined();
 
@@ -75,9 +75,9 @@ describe('Lore month command', () => {
 
 describe('Lore date command', () => {
     it('accepts the \'date\' command', () => {
-        expect(facade.addCommand).not.toHaveBeenCalled();
-        calendar(facade, logger);
-        const dateCmd = commands.find(it => it.name === 'Lore date');
+        expect(commands.addCommand).not.toHaveBeenCalled();
+        calendar(commands, logger);
+        const dateCmd = commandsAdded.find(it => it.name === 'Lore date');
         expect(dateCmd).toBeDefined();
         expect(dateCmd.accept).toBeDefined();
         expect(dateCmd.accept('date')).toBe(true);
@@ -86,8 +86,8 @@ describe('Lore date command', () => {
     it('generates suitable outputs', async () => {
         spyOn(util, 'date').and.returnValue("Full date string from library");
 
-        calendar(facade, logger);
-        const dayCmd = commands.find(it => it.name === 'Lore date');
+        calendar(commands, logger);
+        const dayCmd = commandsAdded.find(it => it.name === 'Lore date');
         expect(dayCmd).toBeDefined();
         expect(dayCmd.handle).toBeDefined();
 

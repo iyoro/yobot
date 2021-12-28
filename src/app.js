@@ -1,9 +1,9 @@
 import pino from 'pino';
 import EventBus from './bus/eventbus.js';
+import commands from './commands.js';
 import commandGroups from './commands/index.js';
 import config from './config.js';
 import discord from './discord.js';
-import facade from './facade.js';
 
 const logger = pino({ level: config.logLevel });
 const commandLogger = logger.child({ name: 'command' });
@@ -16,7 +16,7 @@ eventBus.addListener({
 });
 
 discord(config, eventBus, logger.child({ name: 'discord' }));
-facade(eventBus, commandLogger, config, commandGroups); // TODO rename, facade is a bit meaningless with eventbus refactoring... it's the bot core logic itself basically
+commands(eventBus, commandLogger, config, commandGroups);
 
 //const api = new ServiceAPI(client, logger);
 
