@@ -4,7 +4,7 @@
 /** @typedef {import('discord.js').Channel} Channel */
 
 import Discord from 'discord.js';
-import Events from './events.js';
+import Events from './bus/events.js';
 
 /**
  * Check if a channel is suitable for command handling.
@@ -13,7 +13,7 @@ import Events from './events.js';
  * @param {object} config Influences what is allowed.
  * @returns boolean Whether commands may be processed in this channel.
  */
-const isValidChannel = (channel, config) => {
+export const isValidChannel = (channel, config) => {
   return channel.isText()
     && (channel.isThread() ? config.allowThreads : true)
     && (channel.type === 'DM' ? config.allowDms : true)
@@ -22,52 +22,55 @@ const isValidChannel = (channel, config) => {
 
 // These listeners/events aren't really too useful but do decouple the rest of the code from the API a bit.
 
-const InvalidatedListener = logger => ({
+export const InvalidatedListener = logger => ({
   accept: type => type === Events.Discord.INVALIDATED,
-  notify: (evt, eventBus) => {
+  notify: async (evt, eventBus) => {
     logger.info('Client invalidated, shutting down');
     eventBus.notify(Events.SHUTDOWN, {}).then(() => process.exit(2)); // Exit code 2: Discord client invalidated.
   },
 });
 
-const RateLimitedListener = logger => ({
+export const RateLimitedListener = logger => ({
   accept: type => type === Events.Discord.RATE_LIMITED,
-  notify: ({ limits }) => logger.info({ limits }, 'Rate limited'),
+  notify: async ({ limits }) => logger.info({ limits }, 'Rate limited'),
 });
 
-const ErrorListener = logger => ({
+export const ErrorListener = logger => ({
   accept: type => type === Events.Discord.ERROR,
-  notify: ({ err }, eventBus) => {
+  notify: async ({ err }, eventBus) => {
     logger.error({ err }, 'Client error');
-    eventBus.notify(Events.ERROR, { msg: 'Client error', err });  // TODO check the param (msg) here is whatever the client logger expects.
+    eventBus.notify(Events.ERROR, { msg: 'Client error', err });
   },
 });
 
-const WarningListener = logger => ({
+export const WarningListener = logger => ({
   accept: type => type === Events.Discord.WARNING,
-  notify: ({ warning }) => logger.warn({ warning }, 'Client warning'),
+  notify: async ({ warning }, eventBus) => {
+    logger.warn({ warning }, 'Client warning');
+    eventBus.notify(Events.INFO, { msg: 'Client warning: ' + warning });
+  }
 });
 
-const LoginOkListener = logger => ({
+export const LoginOkListener = logger => ({
   accept: type => type === Events.Discord.LOG_IN_OK,
-  notify: (evt, eventBus) => {
+  notify: async (evt, eventBus) => {
     logger.info('Client logged in');
-    eventBus.notify(Events.INFO, { msg: 'Client logged in' }); // TODO check the param (msg) here is whatever the client logger expects.
+    eventBus.notify(Events.INFO, { msg: 'Client logged in' });
     eventBus.notify(Events.STARTUP, {}); // This is the main event everyone else should listen to, if they want to know when the app is alive.
   },
 });
 
-const LoginErrListener = logger => ({
+export const LoginErrListener = logger => ({
   accept: type => type === Events.Discord.LOG_IN_ERR,
-  notify: ({ error }, eventBus) => {
+  notify: async ({ error }, eventBus) => {
     logger.error(error, 'Client initialisation failed');
     eventBus.notify(Events.SHUTDOWN, {}).then(() => process.exit(1)); // Exit code 1: Client initialisation error
   }
 });
 
-const MessageListener = (config, logger) => ({
+export const MessageListener = (config, logger) => ({
   accept: type => type === Events.Discord.MESSAGE,
-  notify: ({ message }, eventBus) => {
+  notify: async ({ message }, eventBus) => {
     logger.trace(message, 'Message');
     if (message.author.bot) { return; }
     if (!isValidChannel(message.channel, config)) { return; }
@@ -96,7 +99,7 @@ const MessageListener = (config, logger) => ({
  * @param {Discord.Client} client Discord client.
  * @param {object} logger Logger instance.
  */
-const CommandResponder = (client, config, logger) => ({
+export const CommandResponder = (client, config, logger) => ({
   accept: type => type == Events.COMMAND_RESULT,
   notify: async event => {
     const { context, content } = event;
