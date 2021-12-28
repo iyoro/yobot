@@ -2,7 +2,7 @@
  * @file Provides calendar, date and time related commands.
  */
 /** @typedef {import('../facade').default} Facade */
-import Events from '../events.js';
+import Events from '../bus/events.js';
 import calendar from '../util/calendar.js';
 
 /**

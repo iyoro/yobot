@@ -1,14 +1,20 @@
-import Facade from '../src/facade.js';
-import util from '../src/util/calendar.js';
-import calendar from '../src/commands/calendar.js';
 import pino from 'pino';
+import EventBus from '../src/bus/eventbus.js';
+import Events from '../src/bus/events.js';
+import calendar from '../src/commands/calendar.js';
+import { Facade } from '../src/facade.js';
+import util from '../src/util/calendar.js';
 
-let logger, facade, commands;
+let logger, facade, eventBus, context;
+let commands;
 beforeEach(() => {
     logger = pino({ level: 'error' });
-    facade = new Facade({ commandPrefix: '!' }, null);
+    eventBus = new EventBus(logger);
+    facade = new Facade(eventBus, logger);
+    context = { source: 'test' };
     commands = [];
     spyOn(facade, 'addCommand').and.callFake(cmd => commands.push(cmd));
+    spyOn(eventBus, 'notify').and.stub;
 });
 
 describe('Calendar command provider', () => {
@@ -30,7 +36,6 @@ describe('Lore day command', () => {
     });
 
     it('generates suitable outputs', async () => {
-        spyOn(facade, 'reply').and.resolveTo('not used');
         spyOn(util, 'day').and.returnValue('Fredas');
 
         calendar(facade, logger);
@@ -38,10 +43,9 @@ describe('Lore day command', () => {
         expect(dayCmd).toBeDefined();
         expect(dayCmd.handle).toBeDefined();
 
-        const message = { member: { id: 'member id' } };
-        await dayCmd.handle(message, 'not used', 'not used');
+        await dayCmd.handle([], context, eventBus, 'day');
         expect(util.day).toHaveBeenCalledTimes(1);
-        expect(facade.reply).toHaveBeenCalledOnceWith(message, 'It is **Fredas**');
+        expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'It is **Fredas**' }));
     });
 });
 
@@ -56,7 +60,6 @@ describe('Lore month command', () => {
     });
 
     it('generates suitable outputs', async () => {
-        spyOn(facade, 'reply').and.resolveTo('not used');
         spyOn(util, 'month').and.returnValue('Frostfall');
 
         calendar(facade, logger);
@@ -64,10 +67,9 @@ describe('Lore month command', () => {
         expect(monthCmd).toBeDefined();
         expect(monthCmd.handle).toBeDefined();
 
-        const message = { member: { id: 'member id' } };
-        await monthCmd.handle(message, 'not used', 'not used');
+        await monthCmd.handle([], context, eventBus, 'month');
         expect(util.month).toHaveBeenCalledTimes(1);
-        expect(facade.reply).toHaveBeenCalledOnceWith(message, 'It is **Frostfall**');
+        expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'It is **Frostfall**' }));
     });
 });
 
@@ -82,7 +84,6 @@ describe('Lore date command', () => {
     });
 
     it('generates suitable outputs', async () => {
-        spyOn(facade, 'reply').and.resolveTo('not used');
         spyOn(util, 'date').and.returnValue("Full date string from library");
 
         calendar(facade, logger);
@@ -90,9 +91,8 @@ describe('Lore date command', () => {
         expect(dayCmd).toBeDefined();
         expect(dayCmd.handle).toBeDefined();
 
-        const message = { member: { id: 'member id' } };
-        await dayCmd.handle(message, 'not used', 'not used');
+        await dayCmd.handle([], context, eventBus, 'date');
         expect(util.date).toHaveBeenCalledTimes(1);
-        expect(facade.reply).toHaveBeenCalledOnceWith(message, 'It is Full date string from library');
+        expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({ content: 'It is Full date string from library' }));
     });
 });
