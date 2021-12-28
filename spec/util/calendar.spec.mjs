@@ -1,4 +1,4 @@
-import calendar from '../src/util/calendar.js';
+import calendar from '../../src/util/calendar.js';
 
 const DATE = new Date('July 19, 2021, 20:00:00 UTC');
 

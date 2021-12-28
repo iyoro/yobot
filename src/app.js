@@ -18,13 +18,6 @@ eventBus.addListener({
 discord(config, eventBus, logger.child({ name: 'discord' }));
 facade(eventBus, commandLogger, config, commandGroups); // TODO rename, facade is a bit meaningless with eventbus refactoring... it's the bot core logic itself basically
 
-// const facade = new Facade(config, commandLogger, client);
-// const messages = messageHandler(facade);
-
-// for (let group in commandGroups) {
-    // commandGroups[group](facade, commandLogger.child({ group }));
-// }
-
 //const api = new ServiceAPI(client, logger);
 
 process.on('uncaughtException', function (err) {

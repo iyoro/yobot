@@ -1,9 +1,9 @@
 import pino from 'pino';
-import EventBus from '../src/bus/eventbus.js';
-import Events from '../src/bus/events.js';
-import calendar from '../src/commands/calendar.js';
-import { Facade } from '../src/facade.js';
-import util from '../src/util/calendar.js';
+import EventBus from '../../src/bus/eventbus.js';
+import Events from '../../src/bus/events.js';
+import calendar from '../../src/commands/calendar.js';
+import { Facade } from '../../src/facade.js';
+import util from '../../src/util/calendar.js';
 
 let logger, facade, eventBus, context;
 let commands;

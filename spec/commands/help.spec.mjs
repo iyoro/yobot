@@ -1,8 +1,8 @@
 import pino from 'pino';
-import EventBus from '../src/bus/eventbus.js';
-import events from '../src/bus/events.js';
-import help from '../src/commands/help.js';
-import { Facade } from '../src/facade.js';
+import EventBus from '../../src/bus/eventbus.js';
+import events from '../../src/bus/events.js';
+import help from '../../src/commands/help.js';
+import { Facade } from '../../src/facade.js';
 
 const logger = pino({ level: 'error' });
 let facade, eventBus, context;

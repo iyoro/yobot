@@ -1,5 +1,5 @@
 import pino from "pino";
-import EventBus from "../src/bus/eventbus.js";
+import EventBus from "../../src/bus/eventbus.js";
 
 const logger = pino({ level: "info" });
 let bus;

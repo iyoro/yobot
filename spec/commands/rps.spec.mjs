@@ -1,9 +1,9 @@
 import pino from 'pino';
-import EventBus from '../src/bus/eventbus.js';
-import Events from '../src/bus/events.js';
-import rps from '../src/commands/rps.js';
-import { Facade } from '../src/facade.js';
-import util from '../src/util/rps.js';
+import EventBus from '../../src/bus/eventbus.js';
+import Events from '../../src/bus/events.js';
+import rps from '../../src/commands/rps.js';
+import { Facade } from '../../src/facade.js';
+import util from '../../src/util/rps.js';
 
 let logger, facade, eventBus, context;
 let commands;

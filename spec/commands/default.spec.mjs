@@ -1,7 +1,7 @@
 import pino from 'pino';
-import EventBus from '../src/bus/eventbus.js';
-import def from '../src/commands/default.js';
-import { Facade } from '../src/facade.js';
+import EventBus from '../../src/bus/eventbus.js';
+import def from '../../src/commands/default.js';
+import { Facade } from '../../src/facade.js';
 
 const logger = pino({ level: 'error' });
 let facade, command, eventBus;
