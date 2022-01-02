@@ -4,7 +4,7 @@
 import Events from './bus/events.js';
 
 export default (eventBus, logger, config, commandGroups) => {
-  const commands = new Commands(eventBus, logger);
+  const commands = new Commands(config, eventBus, logger);
   for (let group in commandGroups) {
     commandGroups[group](commands, logger.child({ group }), config);
   }
@@ -20,9 +20,10 @@ export default (eventBus, logger, config, commandGroups) => {
  * @property {string} description Command description/usage info
  * @property {boolean} hidden Whether the command is visible externally
 */
-export class Commands { // TODO rename
+export class Commands {
 
-  constructor(eventBus, logger) {
+  constructor(config, eventBus, logger) {
+    this.config = config;
     this.eventBus = eventBus;
     this.logger = logger;
 
@@ -48,9 +49,12 @@ export class Commands { // TODO rename
    * 
    * @param {Command} command Command definition.
    */
-  addCommand(command) {
-    this.logger.debug({ command: command.name, action: "register" });
-    this.commands.push(command); // TODO is this registry needed?
+  addCommand(command) {    
+    const toggle = this.config.command?.toggle[command.name] ?? false;
+    this.logger.debug({ command: command.name, toggle, action: "register" });
+    if (toggle) {
+      this.commands.push(command);
+    }
   }
 
   /**
@@ -59,7 +63,6 @@ export class Commands { // TODO rename
    * @returns {Array<Command>} commands.
    */
   getCommands(withHidden = false) {
-    // TODO only enabled commands regardless of hidden filter
     return withHidden ? this.commands : this.commands.filter(it => it.hidden !== true);
   }
 

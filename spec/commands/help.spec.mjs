@@ -5,12 +5,13 @@ import { Commands } from '../../src/commands.js';
 import help from '../../src/commands/help.js';
 
 const logger = pino({ level: 'error' });
-let commands, eventBus, context;
+let commands, eventBus, context, config;
 let command, event, eventType;
 beforeEach(() => {
+    config = {};
     context = { source: 'test' };
     eventBus = new EventBus(logger);
-    commands = new Commands(eventBus, logger);
+    commands = new Commands(config, eventBus, logger);
     spyOn(commands, 'addCommand').and.callFake(cmd => command = cmd);
     spyOn(eventBus, 'notify').and.callFake((type, evt) => {
         eventType = type;

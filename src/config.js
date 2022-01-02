@@ -15,6 +15,21 @@ export default {
     allowThreads: true,
     // Channel ID for a channel that certain logging can be reported to.
     logChannel: env('LOG_CHANNEL'),
+    command: {
+        // Feature toggles for individual commands, keyed by name.
+        toggle: {
+            'Default': true, // Not the default toggle, it is the toggle for the default (catch all) command handler.
+            'Lore day': true,
+            'Lore date': true,
+            'Lore month': true,
+            'Lore months': true,
+            'Help': true,
+            'Roll': true,
+            'Reroll': true,
+            'Rock, paper, scissors': true,
+            'Soulgem, parchment, clippers': true,
+        }
+    },
     // Config for webservice.
     api: {
         enabled: false,

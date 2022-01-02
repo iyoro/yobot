@@ -5,12 +5,13 @@ import { Commands } from '../../src/commands.js';
 import calendar from '../../src/commands/calendar.js';
 import util from '../../src/util/calendar.js';
 
-let logger, commands, eventBus, context;
+let logger, commands, eventBus, context, config;
 let commandsAdded;
 beforeEach(() => {
+    config = {};
     logger = pino({ level: 'error' });
     eventBus = new EventBus(logger);
-    commands = new Commands(eventBus, logger);
+    commands = new Commands(config, eventBus, logger);
     context = { source: 'test' };
     commandsAdded = [];
     spyOn(commands, 'addCommand').and.callFake(cmd => commandsAdded.push(cmd));

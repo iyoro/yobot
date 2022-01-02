@@ -12,26 +12,37 @@ const stubCommand = {
     accept: () => true,
     handle: async () => new Promise(() => '')
 };
-const mkcommand = (name) => Object.assign({ name }, stubCommand);
+const mkcommand = (name = 'Test command') => Object.assign({ name }, stubCommand);
 
-let eventBus;
-let commands;
-let context;
+let eventBus, commands, context, config;
 beforeEach(function () {
+    config = { command: { toggle: {} } };
     eventBus = new EventBus(logger);
-    commands = new Commands(eventBus, logger);
+    commands = new Commands(config, eventBus, logger);
     context = { 'source': 'test' };
 });
 
 describe('Commands registry', () => {
-    it('can have commands added', () => {
+    it('adds commands that are enabled in config', () => {
         expect(commands.commands).not.toBeNull();
         expect(commands.commands.length).toBe(0);
         commands.addCommand(mkcommand());
+        expect(commands.commands.length).toBe(0);
+        config.command.toggle['Test command'] = false;
+        commands.addCommand(mkcommand());
+        expect(commands.commands.length).toBe(0);
+        config.command.toggle['Test command'] = true;
+        commands.addCommand(mkcommand());
         expect(commands.commands.length).toBe(1);
+        commands.addCommand(mkcommand('Another command'));
+        expect(commands.commands.length).toBe(1);
+        config.command.toggle['Another command'] = true;
+        commands.addCommand(mkcommand('Another command'));
+        expect(commands.commands.length).toBe(2);
     });
 
     it('can return configured commands', () => {
+        config.command.toggle['Test command'] = true;
         const c1 = mkcommand();
         c1.hidden = true;
         commands.addCommand(c1);
@@ -50,6 +61,8 @@ describe('Commands registry', () => {
     });
 
     it('executes a command if accepted by a handler', () => {
+        config.command.toggle['fb'] = true;
+        config.command.toggle['cmd'] = true;
         // Add a fallback command which accepts anything.
         const fallback = mkcommand('fb');
         const fbAccept = spyOn(fallback, 'accept').withArgs('something').and.returnValue(true);
@@ -70,7 +83,8 @@ describe('Commands registry', () => {
     });
 
     it('responds to command events', async () => {
-        const cmd = mkcommand('test');
+        config.command.toggle['Test command'] = true;
+        const cmd = mkcommand();
         spyOn(cmd, 'accept').and.callThrough();
         spyOn(cmd, 'handle');
         const cmdEvent = {
