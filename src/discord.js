@@ -68,6 +68,14 @@ export const LoginErrListener = logger => ({
   }
 });
 
+export const GuildCreateDeleteListener = (isDelete, logger) => ({
+  accept: type => type === (isDelete ? Events.Discord.GUILD_DELETE : Events.Discord.GUILD_CREATE),
+  notify: async ({ id, name }, eventBus) => {
+    logger.info({ id, name, isDelete }, 'Guilds changed');
+    eventBus.notify(Events.INFO, { msg: `${isDelete ? "Removed from" : "Added to"} guild **${name}** (${id})` });
+  }
+});
+
 export const MessageListener = (config, logger) => ({
   accept: type => type === Events.Discord.MESSAGE,
   notify: async ({ message }, eventBus) => {
@@ -160,7 +168,7 @@ export const DiscordLogger = (messageType, client, config, logger) => ({
         return;
       }
     }).catch(err => {
-      logger.error({ err, channel: config.logChannel }, "Could not fetch log channel");
+      logger.error({ err, channel: config.logChannel, msg }, "Could not fetch log channel");
     });
   },
 });
@@ -187,6 +195,8 @@ export default (config, eventBus, logger) => {
   eventBus.addListener(WarningListener(glueLogger));
   eventBus.addListener(LoginOkListener(glueLogger));
   eventBus.addListener(LoginErrListener(glueLogger));
+  eventBus.addListener(GuildCreateDeleteListener(true, glueLogger));
+  eventBus.addListener(GuildCreateDeleteListener(false, glueLogger));
   eventBus.addListener({
     accept: type => type === Events.SHUTDOWN,
     notify: () => client.destroy(),
@@ -204,7 +214,10 @@ export default (config, eventBus, logger) => {
     .on('rateLimit', limits => eventBus.notify(Events.Discord.RATE_LIMITED, { limits }))
     .on('error', err => eventBus.notify(Events.Discord.ERROR, { err }))
     .on('warn', warning => eventBus.notify(Events.Discord.WARNING, { warning }))
-    .on('messageCreate', message => eventBus.notify(Events.Discord.MESSAGE, { message }));
+    .on('messageCreate', message => eventBus.notify(Events.Discord.MESSAGE, { message }))
+    .on("guildCreate", guild => eventBus.notify(Events.Discord.GUILD_CREATE, { name: guild.name, id: guild.id })) // join 
+    .on("guildDelete", guild => eventBus.notify(Events.Discord.GUILD_DELETE, { name: guild.name, id: guild.id })) // kicked or guild is deleted
+    ;
 
   client.login(config.clientToken)
     .then(() => eventBus.notify(Events.Discord.LOG_IN_OK), {})

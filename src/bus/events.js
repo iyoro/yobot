@@ -16,5 +16,7 @@ export default {
     LOG_IN_OK: 'discord-log-in-ok',
     LOG_IN_ERR: 'discord-log-in-err',
     MESSAGE: 'discord-message',
+    GUILD_CREATE: 'discord-guild-create',
+    GUILD_DELETE: 'discord-guild-delete'
   },
 };

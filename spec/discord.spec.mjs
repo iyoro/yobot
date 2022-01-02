@@ -1,7 +1,7 @@
 import pino from 'pino';
 import EventBus from '../src/bus/eventbus.js';
 import Events from '../src/bus/events.js';
-import { CommandResponder, DiscordLogger, ErrorListener, InvalidatedListener, isValidChannel, LoginErrListener, LoginOkListener, MessageListener, RateLimitedListener, WarningListener } from '../src/discord.js';
+import { CommandResponder, DiscordLogger, ErrorListener, GuildCreateDeleteListener, InvalidatedListener, isValidChannel, LoginErrListener, LoginOkListener, MessageListener, RateLimitedListener, WarningListener } from '../src/discord.js';
 
 const textChannel = {
   isText() { return true; },
@@ -427,6 +427,44 @@ describe('Event handler', () => {
       expect(client.channels.fetch).toHaveBeenCalledOnceWith('test-log-chan-snowflake');
       expect(channel.send).toHaveBeenCalledOnceWith(jasmine.objectContaining({
         content: ':red_square: test message',
+      }));
+    });
+  });
+
+  describe('GuildCreateDeleteListener', () => {
+    it('accepts join events when configured for creates', async () => {
+      const listener = GuildCreateDeleteListener(false, logger);
+      expect(listener.accept(Events.Discord.GUILD_CREATE)).toBeTrue();
+      expect(listener.accept(Events.Discord.GUILD_DELETE)).toBeFalse();
+      expect(listener.accept('something else')).toBeFalse();
+    });
+
+    it('Logs guild creates to the log channel', async () => {
+      const listener = GuildCreateDeleteListener(false, logger);
+      const channel = { send: async () => undefined };
+      Object.assign(channel, textChannel);
+      spyOn(channel, 'send').and.stub;
+      await listener.notify({ name: 'Test Guild', id: 'test-guild-snowflake' }, eventBus);
+      expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.INFO, jasmine.objectContaining({
+        msg: 'Added to guild **Test Guild** (test-guild-snowflake)',
+      }));
+    });
+
+    it('accepts join events when configured for deletes', async () => {
+      const listener = GuildCreateDeleteListener(true, logger);
+      expect(listener.accept(Events.Discord.GUILD_DELETE)).toBeTrue();
+      expect(listener.accept(Events.Discord.GUILD_CREATE)).toBeFalse();
+      expect(listener.accept('something else')).toBeFalse();
+    });
+
+    it('Logs guild deletes to the log channel', async () => {
+      const listener = GuildCreateDeleteListener(true, logger);
+      const channel = { send: async () => undefined };
+      Object.assign(channel, textChannel);
+      spyOn(channel, 'send').and.stub;
+      await listener.notify({ name: 'Test Guild', id: 'test-guild-snowflake' }, eventBus);
+      expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.INFO, jasmine.objectContaining({
+        msg: 'Removed from guild **Test Guild** (test-guild-snowflake)',
       }));
     });
   });

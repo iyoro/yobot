@@ -7,6 +7,7 @@
   "private": true,
   "scripts": {
     "run": "node src/app.js",
+    "run (trace)": "LOG_LEVEL=trace node src/app.js",
     "test": "jasmine",
     "lint-fix": "eslint --fix src/",
     "missing-tests": "egrep --color -ri -e 'test[[:space:]]*me' -e 'xxx' src/",
