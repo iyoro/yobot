@@ -4,6 +4,7 @@ import commands from './commands.js';
 import commandGroups from './commands/index.js';
 import config from './config.js';
 import discord from './discord.js';
+import service from './service.js';
 
 const logger = pino({ level: config.logLevel });
 const commandLogger = logger.child({ name: 'command' });
@@ -15,8 +16,9 @@ eventBus.addListener({
   notify: (evt, eventBus) => eventBus.shutdown(),
 });
 
-discord(config, eventBus, logger.child({ name: 'discord' }));
+const client = discord(config, eventBus, logger.child({ name: 'discord' }));
 commands(eventBus, commandLogger, config, commandGroups);
+service(client, config, eventBus, logger.child({ name: 'service' }));
 
 //const api = new ServiceAPI(client, logger);
 

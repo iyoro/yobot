@@ -32,7 +32,7 @@ export default {
     },
     // Config for webservice.
     api: {
-        enabled: false,
+        enabled: true,
         host: 'localhost',
         port: '6969'
     }
