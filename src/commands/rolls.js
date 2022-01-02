@@ -47,17 +47,17 @@ export default (commands, logger, config) => {
    * Does a roll, including producing a user-facing error message due to e.g. bad expressions.
    * 
    * @param {string} expr Dice expression
-   * @param {string} contexId Originating member or author identifier.
+   * @param {string} contextId Originating member or author identifier.
    */
-  const doRoll = (expr, contexId) => {
+  const doRoll = (expr, contextId) => {
     let result;
     try {
       result = rolls.roll(expr);
     } catch (err) { // RollError
       if (err.quiet) {
-        logger.info({ expr, contexId }, err.message);
+        logger.info({ expr, contextId }, err.message);
       } else {
-        logger.error({ expr, contexId, err }, err.message);
+        logger.error({ expr, contextId, err }, err.message);
       }
       result = err.userMessage;
     }
