@@ -130,12 +130,15 @@ export const CommandResponder = (client, config, logger) => ({
       logger.error({ context }, "Event would have resulted in an empty message; not sending");
       return;
     }
+    if (reply) {
+      payload.reply = reply;
+    }
 
     // Note that this does not check the config to see if it's allowed to use e.g. threads, DMs - that config only controls where it will process commands.
     // Sending responses is assumed to only be triggered appropriately.
     client.channels.fetch(context.channel).then(channel => {
       if (channel.isText()) {
-        channel.send({ reply, ...payload });
+        channel.send(payload);
       } else {
         logger.error({ event, channel }, "Cannot respond to a non-text channel");
         return;
@@ -223,4 +226,6 @@ export default (config, eventBus, logger) => {
     .then(() => eventBus.notify(Events.Discord.LOG_IN_OK), {})
     .catch(error => eventBus.notify(Events.Discord.LOG_IN_ERR, { error }));
 
+  // The service API does really need this to be exposed.
+  return client;
 };
