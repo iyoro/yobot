@@ -28,6 +28,7 @@ export default {
             'Reroll': true,
             'Rock, paper, scissors': true,
             'Soulgem, parchment, clippers': true,
+            'Timestamp': true,
         }
     },
     // Config for webservice.
