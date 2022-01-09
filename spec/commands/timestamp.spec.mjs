@@ -125,18 +125,14 @@ describe('Timestamp command', () => {
     expect(eventBus.notify).toHaveBeenCalledOnceWith(Events.COMMAND_RESULT, jasmine.objectContaining({
       content: {
         embeds: [{
-          title: 'Timestamp',
-          fields: [{
-            name: 'Interpretation',
-            value: jasmine.anything(),
-          },
+          fields: [
           {
             name: 'Fixed date',
-            value: '`<t:1623705300>` <t:1623705300>'
+              value: jasmine.stringMatching('`<t:1623705300>` <t:1623705300>'),
           },
           {
             name: 'Relative date',
-            value: '`<t:1623705300:R>` <t:1623705300:R>'
+            value: jasmine.stringMatching('`<t:1623705300:R>` <t:1623705300:R>'),
           }]
         }]
       }

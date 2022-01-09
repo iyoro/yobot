@@ -24,22 +24,22 @@ export const parseTime = async args => {
   }
 };
 
-const buildFields = async timestamp => {
-  return [
+const buildMessageContent = async timestamp => ({
+  embeds: [
     {
-      name: 'Interpretation',
-      value: 'This is the date I think you are talking about (timezone may differ):\n' + new Date(timestamp * 1000),
-    },
-    {
-      name: 'Fixed date',
-      value: `\`<t:${timestamp}>\` <t:${timestamp}>`,
-    },
-    {
-      name: 'Relative date',
-      value: `\`<t:${timestamp}:R>\` <t:${timestamp}:R>`,
+      fields: [
+        {
+          name: 'Fixed date',
+          value: `\`<t:${timestamp}>\` <t:${timestamp}>`,
+        },
+        {
+          name: 'Relative date',
+          value: `\`<t:${timestamp}:R>\` <t:${timestamp}:R>`,
+        }
+      ],
     }
-  ];
-};
+  ],
+});
 
 /**
  * Adds commands to the bot registry.
@@ -56,19 +56,8 @@ export default (commands, logger) => {
     handle: async (args, context, eventBus) => {
       logger.debug({ command: 'timestamp' });
       await parseTime(args)
-        .then(buildFields)
-        .then(fields => {
-          eventBus.notify(Events.COMMAND_RESULT, {
-            content: {
-              embeds: [
-                {
-                  title: 'Timestamp',
-                  fields,
-                }
-              ],
-            }, context
-          });
-        })
+        .then(buildMessageContent)
+        .then(content => eventBus.notify(Events.COMMAND_RESULT, { content, context }))
         .catch(err => {
           logger.error({ err }, "Error processing timestamp command");
           eventBus.notify(Events.COMMAND_RESULT, { context, content: ':shrug: are you sure about that?' });
