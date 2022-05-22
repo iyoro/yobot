@@ -7,6 +7,8 @@ everyone agrees that RPBot hates us all.
 
 **Note: the bot only responds in text channels which have `dice` or `roll` somewhere in their name.**
 
+Yobot costs a small amount to keep running. You can help keep it online by sponsoring me here: https://www.patreon.com/yobot
+
 ## Commands
 
 Commands are prefixed with `!` but this can be easily changed on request.
